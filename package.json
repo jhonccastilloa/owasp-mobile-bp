@@ -1,0 +1,24 @@
+{
+  "name": "owasp-bp",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "bin": {
+    "owasp": "./dist/index.js"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "compile": "npx tsc",
+    "chmod": "chmod +x dist/index.js",
+    "install-global": "npm install -g .",
+    "build": "npm run compile && npm run chmod && npm run install-global",
+    "start": "node dist/index.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/node": "^22.9.0",
+    "typescript": "^5.6.3"
+  }
+}

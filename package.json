@@ -11,7 +11,8 @@
     "compile": "npx tsc",
     "chmod": "chmod +x dist/index.js",
     "install-global": "npm install -g .",
-    "build": "npm run compile && npm run chmod && npm run install-global",
+    "build": "npm run compile && npm run copy-fonts && npm run chmod && npm run install-global",
+    "copy-fonts": "cp -r ./src/assets ./dist",
     "start": "node dist/index.js"
   },
   "keywords": [],
@@ -20,5 +21,8 @@
   "devDependencies": {
     "@types/node": "^22.9.0",
     "typescript": "^5.6.3"
+  },
+  "dependencies": {
+    "pdfmake": "^0.2.15"
   }
 }

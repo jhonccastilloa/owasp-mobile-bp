@@ -1,5 +1,7 @@
 import fs from "fs";
 import path from "path";
+import { PermissionData, Report } from "./types/global";
+import { PermissionStatus } from "./types/enums";
 
 const searchPatterns = [
   "System.out.printf",
@@ -7,11 +9,6 @@ const searchPatterns = [
   "System.err.println",
 ];
 
-interface Report {
-  file: string;
-  line: number;
-  pattern: string;
-}
 const searchInFiles = async (directory: string, report: any[]) => {
   try {
     // Lee el directorio usando fs.promises.readdir
@@ -46,8 +43,6 @@ const searchInFiles = async (directory: string, report: any[]) => {
                 // // Agrupar por archivo y consolidar las líneas
                 const groupedReport = Object.values(
                   report.reduce((acc: any, item: any) => {
-                    console.log("acc-->", acc)
-                    console.log("item-->", item)
 
                     if (!acc[item.file]) {
                       acc[item.file] = { file: item.file, line: [], pattern: item.pattern };
@@ -67,7 +62,6 @@ const searchInFiles = async (directory: string, report: any[]) => {
 
                 report.length = 0; // Limpia el arreglo original
                 report.push(...groupedReport);
-                console.log("groupedReport2---->", report);
 
               }
             });
@@ -87,20 +81,28 @@ const searchInFiles = async (directory: string, report: any[]) => {
 };
 
 
-const foundPrintJava = async (directory: string): Promise<any[]> => {
+const foundPrintJava = async (directory: string): Promise<any> => {
   const report: Report[] = [];
-  // console.log("foundPrintJava----> REPORT", report)
 
   try {
     await searchInFiles(path.join(directory, 'android'), report);
-    console.log("searchInFiles--------> REPORT", report)
+    // console.log("searchInFiles--------> REPORT", report)
 
+    const data: PermissionData = {
+      numLine: null,
+      status: report.length === 0 ? PermissionStatus.OK : PermissionStatus.ERROR,
+      permission: "Logs en archivos Java",
+      severity: "E",
+      message: "No se generaron logs, por lo que no existe información sensible ni datos personales que puedan ser expuestos.                 ",
+      owaspCategory: "M8",
+      extraData: report,
 
+    }
+    return data
   } catch (err) {
     console.error("Error durante la búsqueda", err);
   }
 
-  return report
 }
 
 export default foundPrintJava

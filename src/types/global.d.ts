@@ -1,22 +1,37 @@
+import { PermissionStatus } from "./enums";
+
 export interface Permission {
-  requiredDependencies: string[];
   severity: string;
   message: string;
   owaspCategory: OwaspCategory;
 }
 
-export interface VerifyUserPermission {
+export interface UserPermission extends Permission {
+  requiredDependencies: string[];
+}
+export interface Report {
+  file: string;
+  line: number;
+  pattern: string;
+}
+
+export interface GeneralPermission extends Permission {
+  values: string[];
+}
+
+export interface PermissionData extends Permission {
+  numLine: null | number;
+  status: PermissionStatus;
   permission: string;
-  numLine: number;
-  owaspCategory: OwaspCategory;
-  severity: string;
-  justifyPermission: boolean;
+  extraData?: Report[];
+  nameFile?: string;
+
 }
 
 export interface PdfDataPer {
   percentageJustified: number;
   percentageJustifiedLabel: string;
-  permissions: VerifyUserPermission[];
+  permissions: PermissionData[];
 }
 
 export type PdfDataPermission = Record<string, PdfDataPer>;

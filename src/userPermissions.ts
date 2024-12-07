@@ -1,7 +1,9 @@
 import fs from "fs";
 import path from "path";
-import { REQUIRED_PERMISSIONS } from "./data/userPermissionData";
-import { VerifyUserPermission } from "./types/global";
+import { REQUIRED_PERMISSIONS_BY_USER } from "./data";
+import { PermissionData } from "./types/global";
+import { cleanComentaries, linesUpToMatch } from "./utils/tool";
+import { PermissionStatus } from "./types/enums";
 
 
 
@@ -21,28 +23,22 @@ const getManifestPermissions = async (
   androidManifestFilePath: string
 ): Promise<AMUserPermision[]> => {
   const readData = await fs.promises.readFile(androidManifestFilePath, "utf-8");
-  // const data = readData.replace(/<!--([\s\S]+)-->/g, "")
-  let match1: RegExpExecArray | null;
-  const regex1 = /<!--([\s\S]*?)-->/g;
-  let data = ""
-  while ((match1 = regex1.exec(readData)) !== null) {
-    data = readData.replace(match1[0], match1[0].split('\n').map((_, i) => i).join('\n'))
-  }
+  const data = cleanComentaries(readData)
   const regex = /<uses-permission\s+android:name\s*?=\s*?"([^"]+)"/g;
   let match: RegExpExecArray | null;
   const permissions: AMUserPermision[] = []
   while ((match = regex.exec(data)) !== null) {
     const matchPosition = match.index;
-    const linesUpToMatch = data.substring(0, matchPosition).split('\n').length;
+    const numLine = linesUpToMatch(data, matchPosition)
     permissions.push({
       permission: match[1].replace('android.permission.', ''),
-      numLine: linesUpToMatch
+      numLine
     });
   }
   return permissions;
 };
 
-const verifyPermissions = async (currentPath: string): Promise<VerifyUserPermission[] | undefined> => {
+const verifyPermissions = async (currentPath: string): Promise<PermissionData[] | undefined> => {
   try {
     const packageFilePath = path.join(currentPath, "package.json");
     const dependencies = new Set(await getDependencies(packageFilePath));
@@ -58,18 +54,21 @@ const verifyPermissions = async (currentPath: string): Promise<VerifyUserPermiss
     const owaspPermission = []
 
     for (const manifestPermission of manifestPermissions) {
-      const requiredPermission = REQUIRED_PERMISSIONS[manifestPermission.permission]
+      const requiredPermission = REQUIRED_PERMISSIONS_BY_USER[manifestPermission.permission]
       if (requiredPermission) {
         const hasRequiredDependency = requiredPermission.requiredDependencies.some((dep) =>
           dependencies.has(dep)
         );
-        owaspPermission.push({
+        const data: PermissionData = {
           permission: manifestPermission.permission,
           numLine: manifestPermission.numLine,
           owaspCategory: requiredPermission.owaspCategory,
           severity: requiredPermission.severity,
-          justifyPermission: hasRequiredDependency
-        })
+          message: requiredPermission.message,
+          status: hasRequiredDependency ? PermissionStatus.OK : PermissionStatus.ERROR,
+          nameFile: "AndroidManifext.xml"
+        }
+        owaspPermission.push(data)
       }
     }
 

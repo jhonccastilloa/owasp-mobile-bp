@@ -1,6 +1,6 @@
-import { Permission } from "../types/global";
+import { UserPermission } from "../types/global";
 
-export const REQUIRED_PERMISSIONS: Record<string, Permission> = {
+export const REQUIRED_PERMISSIONS_BY_USER: Record<string, UserPermission> = {
   ACCESS_COARSE_LOCATION: {
     requiredDependencies: [
       "react-native-geolocation-service",
@@ -148,7 +148,7 @@ export const REQUIRED_PERMISSIONS: Record<string, Permission> = {
   WRITE_EXTERNAL_STORAGE: {
     requiredDependencies: ["react-native-share", "react-native-view-shot", "react-native-document-picker"],
     severity: "E",
-    message: "",
+    message: "No se utiliza almacenamiento externo para evitar exposición de datos. ",
     owaspCategory: "M2",
   },
   WRITE_USE_APP_FEATURE_SURVEY: {

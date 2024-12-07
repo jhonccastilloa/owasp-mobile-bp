@@ -1,66 +1,12 @@
 import fs from "fs";
 import path from "path";
+import { REQUIRED_PERMISSIONS } from "./data";
+import { linesUpToMatch } from "./utils/tool";
+import { PermissionData } from "./types/global";
+import { PermissionStatus } from "./types/enums";
 
-type Results = Record<string, string>;
 
-const results: Results = {};
-
-const keyValues: Record<string, [string, string]> = {
-  "M1.1": ["android:allowBackup", "false"],
-  "M1.2": ["android:debuggable", "false"],
-  "M1.3": ["android:InstallLocation", "false"],
-  // "M4.1": ["android:launchMode", "singleInstance"],
-};
-
-const searchFile = async (androidManifestFilePath: string): Promise<void> => {
-  const data = await fs.promises.readFile(androidManifestFilePath, "utf-8");
-  const lines = data.split("\n");
-
-  for (const [mainKey, [subKey, subValue]] of Object.entries(keyValues)) {
-    let found = false;
-    for (let lineNumber = 0; lineNumber < lines.length; lineNumber++) {
-      if (searchKey(mainKey, subKey, subValue, lines[lineNumber])) {
-        found = true;
-        break;
-      }
-    }
-
-    if (!found) {
-      results[mainKey] = "NOT FOUND";
-    }
-  }
-};
-
-const searchKey = (
-  mainKey: string,
-  subKey: string,
-  subValue: string,
-  line: string
-): boolean => {
-  const result = line.match(/^[^=]+/);
-  if (!result) return false;
-  const value = result[0].trim();
-  if (value === subKey) {
-    validateValue(mainKey, subValue, line);
-    return true;
-  }
-  return false;
-};
-
-const validateValue = (
-  mainKey: string,
-  subValue: string,
-  line: string
-): void => {
-  const result = line.match(/"([^"]*)"/);
-  if (result && result[1] !== subValue) {
-    results[mainKey] = "Error";
-  } else {
-    results[mainKey] = "OK";
-  }
-};
-
-const checkPermissionsGeneral = async (currentPath: string): Promise<any> => {
+const checkPermissionsGeneral = async (currentPath: string): Promise<PermissionData[]> => {
   const androidManifestFilePath = path.join(
     currentPath,
     "android",
@@ -69,45 +15,38 @@ const checkPermissionsGeneral = async (currentPath: string): Promise<any> => {
     "main",
     "AndroidManifest.xml"
   );
-  await searchFile(androidManifestFilePath);
 
+  const readData = await fs.promises.readFile(androidManifestFilePath, "utf-8");
 
-  console.log("RESULTADOS:--->", results)
-  // results ={ 'M1.1': 'OK', 'M1.2': 'NOT FOUND', 'M1.3': 'NOT FOUND' }
-  // const results = { 'M1.1': 'OK', 'M1.2': 'NOT FOUND', 'M1.3': 'NOT FOUND' };
+  const owaspPermission = [];
 
-  const resultsArray = Object.keys(results).map((key: any) => ({
-    control: key,
-    status: results[key]
-  }));
+  for (const [mainKey, data] of Object.entries(REQUIRED_PERMISSIONS)) {
+    const regex = new RegExp(`${mainKey}\\s*=\\s*"([^b]*)"`);
+    const matchData = regex.exec(readData);
 
-  console.log("resultsArray, ", resultsArray);
-
-  const M1results: any = []
-  resultsArray.forEach(element => {
-    let result = {}
-    if (element.status == "OK") {
-      result = {
-        desc: "La aplicación no permite que sus datos se incluyan en copias de seguridad.",
-        item: element.control
-      }
-    } else if (element.status == "NOT FOUND") {
-      result = {
-        desc: "No esta declarado Android:allowBackup",
-        item: element.control
-      }
-    } else {
-      result = {
-        desc: "android:allowBackup debe estar declarado como false",
-        item: element.control
-      }
+    const permission: PermissionData = {
+      permission: mainKey,
+      owaspCategory: data.owaspCategory,
+      severity: data.severity,
+      message: data.message,
+      numLine: null,
+      status: PermissionStatus.NOT_FOUND,
+      nameFile: "AndroidManifext.xml"
     }
-    M1results.push(result)
-    console.log("M1results", M1results)
 
-  });
+    if (!matchData) {
+      permission.status = PermissionStatus.NOT_FOUND
 
-  // return results
+    } else {
+      const numLine = linesUpToMatch(readData, matchData.index);
+      permission.numLine = numLine
+      permission.status = data.values.includes(matchData[1]) ? PermissionStatus.OK : PermissionStatus.ERROR
+    }
+    owaspPermission.push(permission)
+  }
+
+  return owaspPermission
+
 };
 
 export default checkPermissionsGeneral;

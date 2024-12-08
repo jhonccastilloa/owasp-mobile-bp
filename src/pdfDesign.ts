@@ -1,12 +1,48 @@
-export const createPdfDefinition = (json: any) => {
-    const owaspBlocks = Object.keys(json.owasp).reduce((acc: any, category) => {
+import { blob } from "stream/consumers";
+
+export interface AppData {
+    appName: string;
+    currentBranch: string;
+    percentage: string;
+    status: boolean;
+    date: string;
+    owasp: Record<string, OwaspCategory>;
+}
+
+export interface OwaspCategory {
+    percentageJustified: number;
+    percentageJustifiedLabel: string;
+    permissions: Permission[];
+}
+
+export interface Permission {
+    permission: string;
+    numLine: number | null;
+    owaspCategory: string;
+    severity: string;
+    message: string;
+    status: string;
+    nameFile: string;
+    extraData?: ExtraData[];
+}
+
+export interface ExtraData {
+    file: string;
+    line: string;
+    pattern: string;
+}
+
+export const createPdfDefinition = (json: AppData) => {
+    const owaspBlocks = Object.keys(json.owasp).reduce((acc: any, category: string) => {
         acc.push({
-            text: category,
+            text: [
+                { text: `${category}: (${json.owasp[category].percentageJustifiedLabel})` }
+            ],
             style: 'header',
             margin: [0, 10, 0, 5]
         });
 
-        json.owasp[category].permissions.forEach((permission: any) => {
+        json.owasp[category].permissions.forEach((permission: Permission) => {
             let statusColor = 'orange';
             if (permission.status === 'OK') {
                 statusColor = 'green';
@@ -16,14 +52,14 @@ export const createPdfDefinition = (json: any) => {
 
             let extraContent = [];
             if (permission.permission === "Logs en archivos Java" && permission.extraData) {
-                extraContent = permission.extraData.map((extra: any) => ({
+                extraContent = permission.extraData.map(extra => ({
                     text: [
                         { text: `Archivo: ${extra.file}\n`, bold: true },
                         {
                             text: `Líneas: ${extra.line}\n`,
-                            //  italics: true
+                            font: 'Roboto',
+                            style: 'italics'
                         },
-                        //   { text: `Patrón: ${extra.pattern}\n`, color: 'gray' }
                     ],
                     margin: [10, 5, 0, 5]
                 }));
@@ -31,7 +67,8 @@ export const createPdfDefinition = (json: any) => {
                 extraContent = [
                     {
                         text: `Archivo: ${permission.nameFile || 'No especificado'} - línea: ${permission.numLine || 'No especificado'}`,
-                        // italics: true
+                        font: 'Roboto',
+                        style: 'italics'
                     }
                 ];
             }
@@ -54,6 +91,7 @@ export const createPdfDefinition = (json: any) => {
         return acc;
     }, []);
 
+
     return {
         content: [
             {
@@ -63,32 +101,41 @@ export const createPdfDefinition = (json: any) => {
                         [
                             {
                                 stack: [
-                                    { text: 'Nombree de la aplicación:', bold: true },
+                                    { text: 'Nombre de la aplicación:', style: 'subtitle' },
                                     { text: json.appName },
-                                    { text: 'Estado:', bold: true, margin: [0, 10, 0, 0] },
+                                    { text: 'Estado:', style: 'subtitle', margin: [0, 10, 0, 0] },
                                     { text: json.percentage }
                                 ]
                             },
                             {
                                 stack: [
-                                    { text: 'Branch:', bold: true },
+                                    { text: 'Branch:', style: 'subtitle' },
                                     { text: json.currentBranch },
-                                    { text: 'Líneas:', bold: true, margin: [0, 10, 0, 0] },
+                                    { text: 'Líneas:', style: 'subtitle', margin: [0, 10, 0, 0] },
                                     { text: '1000' }
                                 ]
                             },
                             {
                                 stack: [
-                                    { text: 'Fecha:', bold: true },
-                                    { text: json.date }, // Dinámico
-                                    { text: 'Umbral de Calidad:', bold: true, margin: [0, 10, 0, 0] },
-                                    { text: json.status ? 'OK' : 'ERROR' } // Dinámico
+                                    { text: 'Fecha:', style: 'subtitle' },
+                                    { text: json.date },
+                                    { text: 'Umbral de Calidad:', style: 'subtitle', margin: [0, 10, 0, 0] },
+                                    { text: json.status ? 'OK' : 'ERROR' }
                                 ]
                             }
                         ]
                     ]
                 },
-                layout: 'noBorders',
+                layout: {
+                    hLineWidth: (i: any, node: any) => (i === 0 || i === node.table.body.length ? 1 : 0),
+                    vLineWidth: (i: any, node: any) => (i === 0 || i === node.table.widths.length ? 1 : 0),
+                    hLineColor: () => '#008000',
+                    vLineColor: () => '#008000',
+                    paddingLeft: () => 15,
+                    paddingRight: () => 15,
+                    paddingTop: () => 15,
+                    paddingBottom: () => 15,
+                },
                 margin: [0, 0, 0, 10]
             },
             ...owaspBlocks
@@ -100,7 +147,8 @@ export const createPdfDefinition = (json: any) => {
         styles: {
             header: {
                 fontSize: 14,
-                bold: true
+                bold: true,
+                alignment: 'center'
             },
             tableHeader: {
                 bold: true,
@@ -130,6 +178,10 @@ export const createPdfDefinition = (json: any) => {
             cardDescription: {
                 fontSize: 10,
                 margin: [5, 5, 5, 5]
+            },
+            subtitle: {
+                bold: true,
+                color: '#5A5A5A',
             }
         },
         pageMargins: [40, 60, 40, 60],

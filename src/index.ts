@@ -15,7 +15,7 @@ const fonts = {
    Roboto: {
       normal: path.resolve(__dirname, "assets/fonts/Roboto/Roboto-Regular.ttf"),
       bold: path.resolve(__dirname, "assets/fonts/Roboto/Roboto-Medium.ttf"),
-      // italics: '..assets/Roboto/Roboto-Italic.ttf',
+      italics: path.resolve(__dirname, '..assets/Roboto/Roboto-Italic.ttf'),
       // bolditalics: '..assets/Roboto/Roboto-MediumItalic.ttf',
    },
 };
@@ -66,7 +66,7 @@ const transformPdfdata = (data: PermissionData[]): PdfDataPermission => {
 
 const main = async () => {
    const args = process.argv.slice(2);
-   const messages = []; // Array para acumular los mensajes
+   const messages = [];
 
    switch (args[0]) {
       case "verify":

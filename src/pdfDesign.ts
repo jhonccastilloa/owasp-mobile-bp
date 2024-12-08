@@ -1,71 +1,97 @@
-export const createPdfDefinition = (contentArray: any) => {
+export const createPdfDefinition = (json: any) => {
+    const owaspBlocks = Object.keys(json.owasp).reduce((acc: any, category) => {
+        acc.push({
+            text: category,
+            style: 'header',
+            margin: [0, 10, 0, 5]
+        });
+
+        json.owasp[category].permissions.forEach((permission: any) => {
+            let statusColor = 'orange';
+            if (permission.status === 'OK') {
+                statusColor = 'green';
+            } else if (permission.status === 'ERROR') {
+                statusColor = 'red';
+            }
+
+            let extraContent = [];
+            if (permission.permission === "Logs en archivos Java" && permission.extraData) {
+                extraContent = permission.extraData.map((extra: any) => ({
+                    text: [
+                        { text: `Archivo: ${extra.file}\n`, bold: true },
+                        {
+                            text: `Líneas: ${extra.line}\n`,
+                            //  italics: true
+                        },
+                        //   { text: `Patrón: ${extra.pattern}\n`, color: 'gray' }
+                    ],
+                    margin: [10, 5, 0, 5]
+                }));
+            } else {
+                extraContent = [
+                    {
+                        text: `Archivo: ${permission.nameFile || 'No especificado'} - línea: ${permission.numLine || 'No especificado'}`,
+                        // italics: true
+                    }
+                ];
+            }
+
+            acc.push({
+                stack: [
+                    {
+                        text: [
+                            { text: `${permission.status}`, color: statusColor },
+                            { text: ` ${permission.permission} - ${permission.message || 'Sin descripción.'}`, color: 'black' }
+                        ],
+                        margin: [0, 0, 0, 5]
+                    },
+                    ...extraContent
+                ],
+                margin: [10, 0, 0, 5]
+            });
+        });
+
+        return acc;
+    }, []);
+
     return {
         content: [
             {
-                columns: [
-                    {
-                        text: 'Informe de Seguridad del Proyecto',
-                        style: 'header',
-                        alignment: 'center',
-                        margin: [0, 10],
-                        width: '*'
-                    }
-                ]
+                table: {
+                    widths: ['33%', '33%', '33%'],
+                    body: [
+                        [
+                            {
+                                stack: [
+                                    { text: 'Nombree de la aplicación:', bold: true },
+                                    { text: json.appName },
+                                    { text: 'Estado:', bold: true, margin: [0, 10, 0, 0] },
+                                    { text: json.percentage }
+                                ]
+                            },
+                            {
+                                stack: [
+                                    { text: 'Branch:', bold: true },
+                                    { text: json.currentBranch },
+                                    { text: 'Líneas:', bold: true, margin: [0, 10, 0, 0] },
+                                    { text: '1000' }
+                                ]
+                            },
+                            {
+                                stack: [
+                                    { text: 'Fecha:', bold: true },
+                                    { text: json.date }, // Dinámico
+                                    { text: 'Umbral de Calidad:', bold: true, margin: [0, 10, 0, 0] },
+                                    { text: json.status ? 'OK' : 'ERROR' } // Dinámico
+                                ]
+                            }
+                        ]
+                    ]
+                },
+                layout: 'noBorders',
+                margin: [0, 0, 0, 10]
             },
-            {
-                columns: [
-                    { text: 'Nombre del Proyecto: Proyecto X', style: 'subheader' },
-                    { text: 'Rama: main', style: 'subheader' }
-                ]
-            },
-            {
-                columns: [
-                    { text: 'Líneas de Código: 14500', style: 'subheader' },
-                    { text: 'Fecha: 2024-11-20', style: 'subheader' }
-                ]
-            },
-            {
-                columns: [
-                    { text: 'Estado: Aprobado', style: 'subheader' },
-                    { text: 'Porcentaje: 90%', style: 'subheader' }
-                ]
-            },
-            { text: '\n' }, // Espaciado
-
-            { text: 'Distribución de Resultados OWASP Mobile Top 10', style: 'sectionHeader' },
-
-            // M8
-            {
-                text: 'M8: Manipulación de código',
-                style: 'cardTitle',
-                fillColor: '#f2f2f2',
-                alignment: 'center',
-                margin: [0, 10]
-            },
-            {
-                text: 'Porcentaje: 85%',
-                style: 'cardPercent',
-                alignment: 'center',
-                margin: [0, 10]
-            },
-            {
-                text: 'Ítems que pasaron:',
-                style: 'cardDescription',
-                bold: true
-            },
-            {
-                text: 'The application should refuse to run on a rooted device',
-                style: 'cardDescription'
-            },
-            {
-                text: 'Ítems que fallaron:',
-                style: 'cardDescription',
-                bold: true
-            },
-            ...contentArray.map((line: any) => ({
-                text: `Archivo: ${line.file}, Línea: ${line.line}`,
-                style: 'cardDescription'
-            }))
+            ...owaspBlocks
         ],
         defaultStyle: {
             // font: 'Roboto',
@@ -73,9 +99,13 @@ export const createPdfDefinition = (contentArray: any) => {
         },
         styles: {
             header: {
-                fontSize: 18,
+                fontSize: 14,
+                bold: true
+            },
+            tableHeader: {
                 bold: true,
-                margin: [0, 10]
+                fontSize: 12,
+                color: 'black'
             },
             subheader: {
                 fontSize: 12,

@@ -1,22 +1,23 @@
-import fs from "fs";
-import path from "path";
-import { REQUIRED_PERMISSIONS } from "./data";
-import { linesUpToMatch } from "./utils/tool";
-import { PermissionData } from "./types/global";
-import { PermissionStatus } from "./types/enums";
+import fs from 'fs';
+import path from 'path';
+import { REQUIRED_PERMISSIONS } from './data';
+import { linesUpToMatch } from './utils/tool';
+import { PermissionData } from './types/global';
+import { PermissionStatus } from './types/enums';
 
-
-const checkPermissionsGeneral = async (currentPath: string): Promise<PermissionData[]> => {
+const checkPermissionsGeneral = async (
+  currentPath: string
+): Promise<PermissionData[]> => {
   const androidManifestFilePath = path.join(
     currentPath,
-    "android",
-    "app",
-    "src",
-    "main",
-    "AndroidManifest.xml"
+    'android',
+    'app',
+    'src',
+    'main',
+    'AndroidManifest.xml'
   );
 
-  const readData = await fs.promises.readFile(androidManifestFilePath, "utf-8");
+  const readData = await fs.promises.readFile(androidManifestFilePath, 'utf-8');
 
   const owaspPermission = [];
 
@@ -31,22 +32,22 @@ const checkPermissionsGeneral = async (currentPath: string): Promise<PermissionD
       message: data.message,
       numLine: null,
       status: PermissionStatus.NOT_FOUND,
-      nameFile: "AndroidManifext.xml"
-    }
+      nameFile: 'AndroidManifext.xml',
+    };
 
     if (!matchData) {
-      permission.status = PermissionStatus.NOT_FOUND
-
+      permission.status = PermissionStatus.NOT_FOUND;
     } else {
       const numLine = linesUpToMatch(readData, matchData.index);
-      permission.numLine = numLine
-      permission.status = data.values.includes(matchData[1]) ? PermissionStatus.OK : PermissionStatus.ERROR
+      permission.numLine = numLine;
+      permission.status = data.values.includes(matchData[1])
+        ? PermissionStatus.OK
+        : PermissionStatus.ERROR;
     }
-    owaspPermission.push(permission)
+    owaspPermission.push(permission);
   }
 
-  return owaspPermission
-
+  return owaspPermission;
 };
 
 export default checkPermissionsGeneral;

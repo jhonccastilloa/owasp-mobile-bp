@@ -1,20 +1,17 @@
-import fs from "fs";
-import path from "path";
-import { REQUIRED_PERMISSIONS_BY_USER } from "./data";
-import { PermissionData } from "./types/global";
-import { cleanComentaries, linesUpToMatch } from "./utils/tool";
-import { PermissionStatus } from "./types/enums";
-
-
+import fs from 'fs';
+import path from 'path';
+import { REQUIRED_PERMISSIONS_BY_USER } from './data';
+import { PermissionData } from './types/global';
+import { cleanComentaries, linesUpToMatch } from './utils/tool';
+import { PermissionStatus } from './types/enums';
 
 interface AMUserPermision {
   permission: string;
-  numLine: number
+  numLine: number;
 }
 
-
 const getDependencies = async (packageFilePath: string): Promise<string[]> => {
-  const data = await fs.promises.readFile(packageFilePath, "utf-8");
+  const data = await fs.promises.readFile(packageFilePath, 'utf-8');
   const jsonData = JSON.parse(data);
   return Object.keys(jsonData.dependencies || {});
 };
@@ -22,65 +19,69 @@ const getDependencies = async (packageFilePath: string): Promise<string[]> => {
 const getManifestPermissions = async (
   androidManifestFilePath: string
 ): Promise<AMUserPermision[]> => {
-  const readData = await fs.promises.readFile(androidManifestFilePath, "utf-8");
-  const data = cleanComentaries(readData)
+  const readData = await fs.promises.readFile(androidManifestFilePath, 'utf-8');
+  const data = cleanComentaries(readData);
   const regex = /<uses-permission\s+android:name\s*?=\s*?"([^"]+)"/g;
   let match: RegExpExecArray | null;
-  const permissions: AMUserPermision[] = []
+  const permissions: AMUserPermision[] = [];
   while ((match = regex.exec(data)) !== null) {
     const matchPosition = match.index;
-    const numLine = linesUpToMatch(data, matchPosition)
+    const numLine = linesUpToMatch(data, matchPosition);
     permissions.push({
       permission: match[1].replace('android.permission.', ''),
-      numLine
+      numLine,
     });
   }
   return permissions;
 };
 
-const verifyPermissions = async (currentPath: string): Promise<PermissionData[] | undefined> => {
+const verifyPermissions = async (
+  currentPath: string
+): Promise<PermissionData[] | undefined> => {
   try {
-    const packageFilePath = path.join(currentPath, "package.json");
+    const packageFilePath = path.join(currentPath, 'package.json');
     const dependencies = new Set(await getDependencies(packageFilePath));
     const manifestPath = path.join(
       currentPath,
-      "android",
-      "app",
-      "src",
-      "main",
-      "AndroidManifest.xml"
+      'android',
+      'app',
+      'src',
+      'main',
+      'AndroidManifest.xml'
     );
     const manifestPermissions = await getManifestPermissions(manifestPath);
-    const owaspPermission = []
+    const owaspPermission = [];
 
     for (const manifestPermission of manifestPermissions) {
-      const requiredPermission = REQUIRED_PERMISSIONS_BY_USER[manifestPermission.permission]
+      const requiredPermission =
+        REQUIRED_PERMISSIONS_BY_USER[manifestPermission.permission];
       if (requiredPermission) {
-        const hasRequiredDependency = requiredPermission.requiredDependencies.some((dep) =>
-          dependencies.has(dep)
-        );
+        const hasRequiredDependency =
+          requiredPermission.requiredDependencies.some(dep =>
+            dependencies.has(dep)
+          );
         const data: PermissionData = {
           permission: manifestPermission.permission,
           numLine: manifestPermission.numLine,
           owaspCategory: requiredPermission.owaspCategory,
           severity: requiredPermission.severity,
           message: requiredPermission.message,
-          status: hasRequiredDependency ? PermissionStatus.OK : PermissionStatus.ERROR,
-          nameFile: "AndroidManifext.xml"
-        }
-        owaspPermission.push(data)
+          status: hasRequiredDependency
+            ? PermissionStatus.OK
+            : PermissionStatus.ERROR,
+          nameFile: 'AndroidManifext.xml',
+        };
+        owaspPermission.push(data);
       }
     }
 
-    return owaspPermission
-
+    return owaspPermission;
   } catch (error) {
     console.log(error);
   }
-  console.log("finalizo")
+  console.log('finalizo');
 };
 export default verifyPermissions;
-
 
 // const test = () => {
 //   verifyPermissions('./example')

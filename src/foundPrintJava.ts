@@ -27,6 +27,7 @@ const searchInFiles = async (directory: string, report: any[]) => {
 
           // Procesa las líneas del archivo
           const lines = data.split('\n');
+
           lines.forEach((line, index) => {
             searchPatterns.forEach(pattern => {
               if (line.includes(pattern)) {
@@ -83,7 +84,6 @@ const foundPrintJava = async (directory: string): Promise<any> => {
 
   try {
     await searchInFiles(path.join(directory, 'android'), report);
-    // console.log("searchInFiles--------> REPORT", report)
 
     const data: PermissionData = {
       numLine: null,

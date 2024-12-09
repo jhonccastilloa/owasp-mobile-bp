@@ -1,7 +1,8 @@
-import { PermissionStatus } from "./enums";
+import { PermissionStatus } from './enums';
 
+export type OwaspSeverity = 'E' | 'W';
 export interface Permission {
-  severity: string;
+  severity: OwaspSeverity;
   message: string;
   owaspCategory: OwaspCategory;
 }
@@ -25,25 +26,42 @@ export interface PermissionData extends Permission {
   permission: string;
   extraData?: Report[];
   nameFile?: string;
-
 }
 
 export interface PdfDataPer {
+  title: string;
   percentageJustified: number;
   percentageJustifiedLabel: string;
   permissions: PermissionData[];
 }
 
+export interface TransformPdfData {
+  owasp: PdfDataPermission;
+  percentage: number;
+  percentageLabel: string;
+  status: string;
+}
+
+export interface PdfData extends TransformPdfData {
+  date: string;
+  appName: string;
+  currentBranch: string;
+}
+
 export type PdfDataPermission = Record<string, PdfDataPer>;
 
 type OwaspCategory =
-  | "M1"
-  | "M2"
-  | "M3"
-  | "M4"
-  | "M5"
-  | "M6"
-  | "M7"
-  | "M8"
-  | "M9"
-  | "M10";
+  | 'M1'
+  | 'M2'
+  | 'M3'
+  | 'M4'
+  | 'M5'
+  | 'M6'
+  | 'M7'
+  | 'M8'
+  | 'M9'
+  | 'M10';
+
+export interface Owasp {
+  title: string;
+}

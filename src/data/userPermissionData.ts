@@ -51,7 +51,7 @@ export const REQUIRED_PERMISSIONS_BY_USER: Record<string, UserPermission> = {
       "react-native-qrcode-scanner",
       "react-native-image-picker",
     ],
-    severity: "",
+    severity: "W",
     message: "Permiso para acceder a la cámara",
     owaspCategory: "M4",
   },

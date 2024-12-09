@@ -2,8 +2,11 @@ import fs from 'fs';
 import path from 'path';
 import { REQUIRED_PERMISSIONS_BY_USER } from './data';
 import { PermissionData } from './types/global';
-import { cleanComentaries, linesUpToMatch } from './utils/tool';
-import { PermissionStatus } from './types/enums';
+import {
+  cleanComentaries,
+  linesUpToMatch,
+  validateSeverity,
+} from './utils/tool';
 
 interface AMUserPermision {
   permission: string;
@@ -35,9 +38,9 @@ const getManifestPermissions = async (
   return permissions;
 };
 
-const verifyPermissions = async (
+const verifyUserPermissions = async (
   currentPath: string
-): Promise<PermissionData[] | undefined> => {
+): Promise<PermissionData[]> => {
   try {
     const packageFilePath = path.join(currentPath, 'package.json');
     const dependencies = new Set(await getDependencies(packageFilePath));
@@ -50,6 +53,7 @@ const verifyPermissions = async (
       'AndroidManifest.xml'
     );
     const manifestPermissions = await getManifestPermissions(manifestPath);
+
     const owaspPermission = [];
 
     for (const manifestPermission of manifestPermissions) {
@@ -66,9 +70,10 @@ const verifyPermissions = async (
           owaspCategory: requiredPermission.owaspCategory,
           severity: requiredPermission.severity,
           message: requiredPermission.message,
-          status: hasRequiredDependency
-            ? PermissionStatus.OK
-            : PermissionStatus.ERROR,
+          status: validateSeverity(
+            requiredPermission.severity,
+            hasRequiredDependency
+          ),
           nameFile: 'AndroidManifext.xml',
         };
         owaspPermission.push(data);
@@ -77,13 +82,12 @@ const verifyPermissions = async (
 
     return owaspPermission;
   } catch (error) {
-    console.log(error);
+    return [];
   }
-  console.log('finalizo');
 };
-export default verifyPermissions;
+export default verifyUserPermissions;
 
 // const test = () => {
-//   verifyPermissions('./example')
+//   verifyUserPermissions('./example')
 // }
 // test()

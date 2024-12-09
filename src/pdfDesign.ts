@@ -1,30 +1,4 @@
-import { blob } from 'stream/consumers';
-
-export interface AppData {
-  appName: string;
-  currentBranch: string;
-  percentage: string;
-  status: boolean;
-  date: string;
-  owasp: Record<string, OwaspCategory>;
-}
-
-export interface OwaspCategory {
-  percentageJustified: number;
-  percentageJustifiedLabel: string;
-  permissions: Permission[];
-}
-
-export interface Permission {
-  permission: string;
-  numLine: number | null;
-  owaspCategory: string;
-  severity: string;
-  message: string;
-  status: string;
-  nameFile: string;
-  extraData?: ExtraData[];
-}
+import { PdfData, PermissionData } from './types/global';
 
 export interface ExtraData {
   file: string;
@@ -32,7 +6,7 @@ export interface ExtraData {
   pattern: string;
 }
 
-export const createPdfDefinition = (json: AppData) => {
+export const createPdfDefinition = (json: PdfData) => {
   const owaspBlocks = Object.keys(json.owasp).reduce(
     (acc: any, category: string) => {
       acc.push({
@@ -45,7 +19,7 @@ export const createPdfDefinition = (json: AppData) => {
         margin: [0, 10, 0, 5],
       });
 
-      json.owasp[category].permissions.forEach((permission: Permission) => {
+      json.owasp[category].permissions.forEach((permission: PermissionData) => {
         let statusColor = 'orange';
         if (permission.status === 'OK') {
           statusColor = 'green';

@@ -70,7 +70,7 @@ const transformPdfdata = (data: PermissionData[]): TransformPdfData => {
     const newPermission: PdfDataPer = {
       ...object,
       percentageJustified,
-      percentageJustifiedLabel: `${transformPercentage(percentageJustified) * 100}%`,
+      percentageJustifiedLabel: `${Math.trunc(transformPercentage(percentageJustified) * 100)}%`,
     };
     return [permission, newPermission] as const;
   });
@@ -88,7 +88,7 @@ const transformPdfdata = (data: PermissionData[]): TransformPdfData => {
   return {
     status: evaluateStatus(totalPercentage * 100).category,
     percentage: totalPercentage,
-    percentageLabel: `${transformPercentage(totalPercentage) * 100}%`,
+    percentageLabel: `${Math.trunc(transformPercentage(totalPercentage) * 100)}%`,
     owasp: Object.fromEntries(groupedPermissionsWithPercentage),
   };
 };

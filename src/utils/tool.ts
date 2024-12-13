@@ -35,8 +35,9 @@ export const validateSeverity = (
 export const linesUpToMatch = (data: string, matchPosition: number) =>
   data.substring(0, matchPosition).split('\n').length;
 
-export const getPercentage = (x: number, y: number) =>
-  Math.floor((x / y) * 100) / 100;
+export const getPercentage = (x: number, y: number) => transformPercentage(x / y);
+
+export const transformPercentage = (value: number) => Math.floor(value * 100) / 100;
 
 export const evaluateStatus = (percentage: number) => {
   if (typeof percentage !== 'number' || percentage < 0 || percentage > 100) {

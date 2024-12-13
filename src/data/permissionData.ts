@@ -21,17 +21,17 @@ export const REQUIRED_PERMISSIONS: Record<string, GeneralPermission> = {
     message: 'La aplicación no es depurable en entornos de producción. ',
     owaspCategory: 'M1',
   },
-  ['Android:launchMode']: {
-    values: ['false'],
+  ['android:launchMode']: {
+    values: ['singleInstance'],
     severity: 'E',
     message: 'El manejo de actividades previene aperturas indebidas',
     owaspCategory: 'M4',
   },
-  ['Android:configChanges']: {
-    values: ['false'],
-    severity: 'E',
-    message:
-      'Los cambios críticos se gestionan manualmente para mayor control. ',
-    owaspCategory: 'M4',
-  },
+  // ['android:configChanges']: {
+  //   values: ['false'],
+  //   severity: 'E',
+  //   message:
+  //     'Los cambios críticos se gestionan manualmente para mayor control. ',
+  //   owaspCategory: 'M4',
+  // },
 };

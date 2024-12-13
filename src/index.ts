@@ -18,7 +18,7 @@ import { PermissionStatus } from './types/enums';
 import verifyBuildGradle from './verifyBuildGradle';
 import verifyNetworkSecurityConfig from './verifyNetworkSecurityConfig';
 import { OWASP } from './data';
-import { evaluateStatus, getPercentage } from './utils/tool';
+import { evaluateStatus, getPercentage, transformPercentage } from './utils/tool';
 
 const fonts = {
   Roboto: {
@@ -70,7 +70,7 @@ const transformPdfdata = (data: PermissionData[]): TransformPdfData => {
     const newPermission: PdfDataPer = {
       ...object,
       percentageJustified,
-      percentageJustifiedLabel: `${percentageJustified * 100}%`,
+      percentageJustifiedLabel: `${transformPercentage(percentageJustified)}%`,
     };
     return [permission, newPermission] as const;
   });
@@ -88,7 +88,7 @@ const transformPdfdata = (data: PermissionData[]): TransformPdfData => {
   return {
     status: evaluateStatus(totalPercentage * 100).category,
     percentage: totalPercentage,
-    percentageLabel: `${totalPercentage * 100}%`,
+    percentageLabel: `${transformPercentage(totalPercentage)}%`,
     owasp: Object.fromEntries(groupedPermissionsWithPercentage),
   };
 };
@@ -130,9 +130,11 @@ const main = async () => {
         date: new Intl.DateTimeFormat('es-ES').format(today),
         ...owaspTransformData,
       };
-      console.log(JSON.stringify(data, null, 3));
+      // console.log(JSON.stringify(data, null, 3));
       generatePDF(data);
-      console.log('-----GENEROOOOOOOO--------------------');
+      console.log('========================================');
+      console.log('REPORTE GENERADO EXITOSAMENTE');
+      console.log('========================================');
 
       break;
 

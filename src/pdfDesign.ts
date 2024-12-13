@@ -12,7 +12,7 @@ export const createPdfDefinition = (json: PdfData) => {
       acc.push({
         text: [
           {
-            text: `${category}: (${json.owasp[category].percentageJustifiedLabel})`,
+            text: `${category}: ${json.owasp[category].title} (${json.owasp[category].percentageJustifiedLabel})`,
           },
         ],
         style: 'header',
@@ -92,17 +92,17 @@ export const createPdfDefinition = (json: PdfData) => {
                   { text: 'Nombre de la aplicación:', style: 'subtitle' },
                   { text: json.appName },
                   { text: 'Estado:', style: 'subtitle', margin: [0, 10, 0, 0] },
-                  { text: json.percentage },
+                  { text: json.percentageLabel },
                 ],
               },
-              {
-                stack: [
-                  { text: 'Branch:', style: 'subtitle' },
-                  { text: json.currentBranch },
-                  { text: 'Líneas:', style: 'subtitle', margin: [0, 10, 0, 0] },
-                  { text: '1000' },
-                ],
-              },
+              // {
+              //   stack: [
+              //     { text: 'Branch:', style: 'subtitle' },
+              //     { text: json.currentBranch },
+              //     { text: 'Líneas:', style: 'subtitle', margin: [0, 10, 0, 0] },
+              //     { text: '1000' },
+              //   ],
+              // },
               {
                 stack: [
                   { text: 'Fecha:', style: 'subtitle' },

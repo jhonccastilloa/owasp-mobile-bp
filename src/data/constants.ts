@@ -11,24 +11,24 @@ export const OWASP: Record<OwaspCategory, Owasp> = {
     title: 'Comunicación insegura',
   },
   M4: {
-    title: 'Autentificación insegura',
+    title: 'Autenticación insegura',
   },
   M5: {
-    title: '',
+    title: 'Criptografía insuficiente',
   },
   M6: {
-    title: '',
+    title: 'Autorización insegura',
   },
   M7: {
-    title: '',
+    title: 'Calidad del código del cliente',
   },
   M8: {
     title: 'Manipulación de código',
   },
   M9: {
-    title: '',
+    title: 'Ingeniería inversa',
   },
   M10: {
-    title: '',
+    title: 'Funcionalidad innecesaria',
   },
 };

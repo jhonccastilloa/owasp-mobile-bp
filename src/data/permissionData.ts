@@ -15,7 +15,7 @@ export const REQUIRED_PERMISSIONS: Record<string, GeneralPermission> = {
       'La instalación está restringida al almacenamiento interno, evitando riesgos de seguridad.',
     owaspCategory: 'M1',
   },
-  ['android:InstallLocation']: {
+  ['android:installLocation']: {
     values: ['internalOnly'],
     severity: 'E',
     message: 'La aplicación no es depurable en entornos de producción. ',

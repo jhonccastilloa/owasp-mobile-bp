@@ -1,17 +1,19 @@
 {
   "name": "owasp-bp",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "owasp verifier",
+  "main": "./dist/index.js",
   "bin": {
-    "owasp": "./dist/index.js"
+    "owasp-bp": "./dist/index.js"
   },
   "scripts": {
+    "prepare": "npm run build",
     "test": "echo \"Error: no test specified\" && exit 1",
     "compile": "npx tsc",
     "chmod": "chmod +x dist/index.js",
     "install-global": "npm install -g .",
-    "build": "npm run compile && npm run copy-fonts && npm run chmod && npm run install-global",
+    "build": "npm run compile && npm run copy-fonts && npm run chmod",
+    "build:dev": "npm run compile && npm run copy-fonts && npm run chmod && npm run install-global",
     "copy-fonts": "cp -r ./src/assets ./dist",
     "start": "node dist/index.js"
   },

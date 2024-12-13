@@ -95,14 +95,14 @@ export const createPdfDefinition = (json: PdfData) => {
                   { text: json.percentageLabel },
                 ],
               },
-              // {
-              //   stack: [
-              //     { text: 'Branch:', style: 'subtitle' },
-              //     { text: json.currentBranch },
-              //     { text: 'Líneas:', style: 'subtitle', margin: [0, 10, 0, 0] },
-              //     { text: '1000' },
-              //   ],
-              // },
+              {
+                stack: [
+                  { text: 'Branch:', style: 'subtitle' },
+                  { text: json.currentBranch },
+                  // { text: 'Líneas:', style: 'subtitle', margin: [0, 10, 0, 0] },
+                  // { text: '1000' },
+                ],
+              },
               {
                 stack: [
                   { text: 'Fecha:', style: 'subtitle' },

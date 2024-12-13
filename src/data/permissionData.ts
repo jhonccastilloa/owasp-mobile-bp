@@ -6,14 +6,14 @@ export const REQUIRED_PERMISSIONS: Record<string, GeneralPermission> = {
     severity: 'E',
     message:
       'La aplicación no permite que sus datos se incluyan en copias de seguridad.',
-    owaspCategory: 'M1',
+    owaspCategory: 'M2',
   },
   ['android:debuggable']: {
     values: ['false'],
     severity: 'E',
     message:
       'La instalación está restringida al almacenamiento interno, evitando riesgos de seguridad.',
-    owaspCategory: 'M1',
+    owaspCategory: 'M9',
   },
   ['android:installLocation']: {
     values: ['internalOnly'],
@@ -25,7 +25,7 @@ export const REQUIRED_PERMISSIONS: Record<string, GeneralPermission> = {
     values: ['singleInstance'],
     severity: 'E',
     message: 'El manejo de actividades previene aperturas indebidas',
-    owaspCategory: 'M4',
+    owaspCategory: 'M7',
   },
   // ['android:configChanges']: {
   //   values: ['false'],

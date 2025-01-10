@@ -1,6 +1,6 @@
 {
   "name": "owasp-bp",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "owasp verifier",
   "main": "./dist/index.js",
   "bin": {

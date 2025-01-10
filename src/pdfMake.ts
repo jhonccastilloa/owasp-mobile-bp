@@ -1,4 +1,14 @@
-import { PdfData, PermissionData } from './types/global';
+import pdfMake from 'pdfmake/build/pdfmake';
+import pdfFonts from 'pdfmake/build/vfs_fonts';
+import path from 'path';
+import fs from 'fs';
+import { TDocumentDefinitions } from 'pdfmake/interfaces';
+import { PdfData, PdfDataPer, PdfDataPermission, PermissionData, TransformPdfData } from './types/global';
+import { OWASP } from './data';
+import { evaluateStatus, getPercentage, transformPercentage } from './utils/tool';
+import { PermissionStatus } from './types/enums';
+
+(<any>pdfMake).addVirtualFileSystem(pdfFonts);
 
 export interface ExtraData {
   file: string;
@@ -6,7 +16,7 @@ export interface ExtraData {
   pattern: string;
 }
 
-export const createPdfDefinition = (json: PdfData) => {
+const createPdfDefinition = (json: PdfData): TDocumentDefinitions => {
   const owaspBlocks = Object.keys(json.owasp).reduce(
     (acc: any, category: string) => {
       acc.push({
@@ -37,7 +47,6 @@ export const createPdfDefinition = (json: PdfData) => {
               { text: `Archivo: ${extra.file}\n`, bold: true },
               {
                 text: `Líneas: ${extra.line}\n`,
-                font: 'Roboto',
                 style: 'italics',
               },
             ],
@@ -49,7 +58,6 @@ export const createPdfDefinition = (json: PdfData) => {
               text: `Archivo: ${
                 permission.nameFile || 'No especificado'
               } - línea: ${permission.numLine || 'No especificado'}`,
-              font: 'Roboto',
               style: 'italics',
             },
           ];
@@ -135,7 +143,6 @@ export const createPdfDefinition = (json: PdfData) => {
       ...owaspBlocks,
     ],
     defaultStyle: {
-      // font: 'Roboto',
       fontSize: 12,
     },
     styles: {
@@ -186,5 +193,105 @@ export const createPdfDefinition = (json: PdfData) => {
         margin: [0, 10, 0, 0],
       };
     },
+  };
+};
+
+export const generatePDF = async (contentArray: PdfData) => {
+  // pdfMake.fonts = {
+  //   Courier: {
+  //     normal: 'Courier',
+  //     bold: 'Courier-Bold',
+  //     italics: 'Courier-Oblique',
+  //     bolditalics: 'Courier-BoldOblique',
+  //   },
+  //   Helvetica: {
+  //     normal: 'Helvetica',
+  //     bold: 'Helvetica-Bold',
+  //     italics: 'Helvetica-Oblique',
+  //     bolditalics: 'Helvetica-BoldOblique',
+  //   },
+  //   Times: {
+  //     normal: 'Times-Roman',
+  //     bold: 'Times-Bold',
+  //     italics: 'Times-Italic',
+  //     bolditalics: 'Times-BoldItalic',
+  //   },
+  //   Symbol: {
+  //     normal: 'Symbol',
+  //   },
+  //   ZapfDingbats: {
+  //     normal: 'ZapfDingbats',
+  //   },
+  // };
+  const docDefinition = createPdfDefinition(contentArray);
+  const pdfDocGenerator = pdfMake.createPdf(docDefinition);
+
+  pdfDocGenerator.getBase64(data => {
+    const buffer = Buffer.from(data, 'base64');
+    const outputPath = path.join(process.cwd(), 'owasp-bp.pdf');
+    fs.writeFile(outputPath, buffer, err => {
+      if (err) {
+        console.error('Error al guardar el archivo PDF:', err);
+      } else {
+        console.log('Archivo PDF guardado en:', outputPath);
+      }
+    });
+  });
+};
+
+export const transformPdfdata = (data: PermissionData[]): TransformPdfData => {
+  const groupedPermissions = data.reduce((obj: PdfDataPermission, item) => {
+    if (!obj[item.owaspCategory]) {
+      obj[item.owaspCategory] = {
+        title: OWASP[item.owaspCategory].title,
+        percentageJustified: 0,
+        percentageJustifiedLabel: '',
+        permissions: [],
+      };
+    }
+    obj[item.owaspCategory].permissions.push(item);
+    return obj;
+  }, {});
+
+  let sumPercentage = 0;
+
+  const groupedPermissionsWithPercentage = Object.entries(
+    groupedPermissions
+  ).map(([permission, object]) => {
+    const contJustifyPermission = object.permissions.filter(
+      ({ status }) => PermissionStatus.OK === status
+    ).length;
+    const percentageJustified = getPercentage(
+      contJustifyPermission,
+      object.permissions.length
+    );
+    sumPercentage += percentageJustified;
+    const newPermission: PdfDataPer = {
+      ...object,
+      percentageJustified,
+      percentageJustifiedLabel: `${Math.trunc(
+        transformPercentage(percentageJustified) * 100
+      )}%`,
+    };
+    return [permission, newPermission] as const;
+  });
+
+  const totalPercentage = getPercentage(
+    sumPercentage,
+    groupedPermissionsWithPercentage.length
+  );
+  groupedPermissionsWithPercentage.sort((a, b) => {
+    const numA = parseInt(a[0].replace('M', ''), 10);
+    const numB = parseInt(b[0].replace('M', ''), 10);
+    return numA - numB;
+  });
+
+  return {
+    status: evaluateStatus(totalPercentage * 100).category,
+    percentage: totalPercentage,
+    percentageLabel: `${Math.trunc(
+      transformPercentage(totalPercentage) * 100
+    )}%`,
+    owasp: Object.fromEntries(groupedPermissionsWithPercentage),
   };
 };

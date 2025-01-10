@@ -1,9 +1,8 @@
 import fs from 'fs';
 import path from 'path';
 import { REQUIRED_PERMISSIONS } from './data';
-import { cleanComentaries, linesUpToMatch } from './utils/tool';
+import { cleanComentaries } from './utils/tool';
 import { PermissionData } from './types/global';
-import { PermissionStatus } from './types/enums';
 import verifyPermissions from './verifyPermissions';
 
 const checkPermissionsGeneral = async (

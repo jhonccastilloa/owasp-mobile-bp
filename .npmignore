@@ -1,3 +1,5 @@
-src
-tsconfig.json
-.prettierrc
+# Ignorar todo
+*
+
+# Incluir la carpeta dist/
+!dist/

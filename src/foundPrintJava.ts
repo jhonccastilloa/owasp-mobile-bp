@@ -11,21 +11,17 @@ const searchPatterns = [
 
 const searchInFiles = async (directory: string, report: any[]) => {
   try {
-    // Lee el directorio usando fs.promises.readdir
     const files = await fs.promises.readdir(directory);
 
     const filePromises = files.map(async file => {
       const filePath = path.join(directory, file);
 
-      // Si es un directorio, se llama recursivamente
       if (fs.lstatSync(filePath).isDirectory()) {
-        await searchInFiles(filePath, report); // Recursión para subdirectorios
+        await searchInFiles(filePath, report);
       } else if (file.endsWith('.java')) {
-        // Lee el archivo usando fs.promises.readFile
         try {
           const data = await fs.promises.readFile(filePath, 'utf8');
 
-          // Procesa las líneas del archivo
           const lines = data.split('\n');
 
           lines.forEach((line, index) => {
@@ -36,12 +32,8 @@ const searchInFiles = async (directory: string, report: any[]) => {
                   line: index + 1,
                   pattern: pattern,
                 };
-                // console.log("REPORT----------->", report)
-                // console.log(
-                //   `Se encontró '${pattern}' en ${filePath}, línea ${index + 1}`
-                // );
+
                 report.push(result);
-                // // Agrupar por archivo y consolidar las líneas
                 const groupedReport = Object.values(
                   report.reduce((acc: any, item: any) => {
                     if (!acc[item.file]) {
@@ -55,14 +47,11 @@ const searchInFiles = async (directory: string, report: any[]) => {
                     return acc;
                   }, {})
                 );
-                // console.log("groupedReport---->", groupedReport)
-
-                // Transformar líneas en una cadena separada por comas
                 groupedReport.forEach((item: any) => {
                   item.line = item.line.join(', ');
                 });
 
-                report.length = 0; // Limpia el arreglo original
+                report.length = 0;
                 report.push(...groupedReport);
               }
             });
@@ -72,14 +61,13 @@ const searchInFiles = async (directory: string, report: any[]) => {
         }
       }
     });
-    // Espera que todas las promesas de archivos se resuelvan
     await Promise.all(filePromises);
   } catch (err) {
     console.error(`Error leyendo el directorio: ${directory}`, err);
   }
 };
 
-const foundPrintJava = async (directory: string): Promise<any> => {
+const foundPrintJava = async (directory: string) => {
   const report: Report[] = [];
 
   try {

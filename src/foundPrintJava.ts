@@ -3,13 +3,15 @@ import path from 'path';
 import { PermissionData, Report } from './types/global';
 import { PermissionStatus } from './types/enums';
 
-const searchPatterns = [
+const LOGS_PATTERNS = [
   'System.out.printf',
   'System.out.println',
   'System.err.println',
+  'System.err.print',
+  'System.out.format'
 ];
 
-const searchInFiles = async (directory: string, report: any[]) => {
+const searchInFiles = async (directory: string, report: Report[]) => {
   try {
     const files = await fs.promises.readdir(directory);
 
@@ -21,41 +23,28 @@ const searchInFiles = async (directory: string, report: any[]) => {
       } else if (file.endsWith('.java')) {
         try {
           const data = await fs.promises.readFile(filePath, 'utf8');
-
           const lines = data.split('\n');
+          const findReport: Record<string, Report> = {}
 
           lines.forEach((line, index) => {
-            searchPatterns.forEach(pattern => {
+            LOGS_PATTERNS.forEach(pattern => {
               if (line.includes(pattern)) {
                 const result: Report = {
                   file: file,
-                  line: index + 1,
+                  line: `${index + 1}`,
                   pattern: pattern,
                 };
 
-                report.push(result);
-                const groupedReport = Object.values(
-                  report.reduce((acc: any, item: any) => {
-                    if (!acc[item.file]) {
-                      acc[item.file] = {
-                        file: item.file,
-                        line: [],
-                        pattern: item.pattern,
-                      };
-                    }
-                    acc[item.file].line.push(item.line);
-                    return acc;
-                  }, {})
-                );
-                groupedReport.forEach((item: any) => {
-                  item.line = item.line.join(', ');
-                });
+                if (findReport[file]) {
+                  findReport[file].line += `, ${index + 1}`
+                } else {
+                  findReport[file] = result
+                }
 
-                report.length = 0;
-                report.push(...groupedReport);
               }
             });
           });
+          report.push(...Object.values(findReport))
         } catch (err) {
           console.error(`Error leyendo el archivo: ${filePath}`, err);
         }
@@ -69,10 +58,8 @@ const searchInFiles = async (directory: string, report: any[]) => {
 
 const foundPrintJava = async (directory: string) => {
   const report: Report[] = [];
-
   try {
     await searchInFiles(path.join(directory, 'android'), report);
-
     const data: PermissionData = {
       numLine: null,
       status:
@@ -84,7 +71,6 @@ const foundPrintJava = async (directory: string) => {
       owaspCategory: 'M8',
       extraData: report,
     };
-
     return data;
   } catch (err) {
     console.error('Error durante la búsqueda', err);

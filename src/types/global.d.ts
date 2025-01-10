@@ -12,7 +12,7 @@ export interface UserPermission extends Permission {
 }
 export interface Report {
   file: string;
-  line: number;
+  line: string;
   pattern: string;
 }
 

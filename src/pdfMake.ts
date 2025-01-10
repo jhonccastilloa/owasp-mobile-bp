@@ -3,9 +3,19 @@ import pdfFonts from 'pdfmake/build/vfs_fonts';
 import path from 'path';
 import fs from 'fs';
 import { TDocumentDefinitions } from 'pdfmake/interfaces';
-import { PdfData, PdfDataPer, PdfDataPermission, PermissionData, TransformPdfData } from './types/global';
+import {
+  PdfData,
+  PdfDataPer,
+  PdfDataPermission,
+  PermissionData,
+  TransformPdfData,
+} from './types/global';
 import { OWASP } from './data';
-import { evaluateStatus, getPercentage, transformPercentage } from './utils/tool';
+import {
+  evaluateStatus,
+  getPercentage,
+  transformPercentage,
+} from './utils/tool';
 import { PermissionStatus } from './types/enums';
 
 (<any>pdfMake).addVirtualFileSystem(pdfFonts);
@@ -47,7 +57,7 @@ const createPdfDefinition = (json: PdfData): TDocumentDefinitions => {
               { text: `Archivo: ${extra.file}\n`, bold: true },
               {
                 text: `Líneas: ${extra.line}\n`,
-                style: 'italics',
+                style: 'italicStyle',
               },
             ],
             margin: [10, 5, 0, 5],
@@ -58,7 +68,7 @@ const createPdfDefinition = (json: PdfData): TDocumentDefinitions => {
               text: `Archivo: ${
                 permission.nameFile || 'No especificado'
               } - línea: ${permission.numLine || 'No especificado'}`,
-              style: 'italics',
+              style: 'italicStyle',
             },
           ];
         }
@@ -143,9 +153,13 @@ const createPdfDefinition = (json: PdfData): TDocumentDefinitions => {
       ...owaspBlocks,
     ],
     defaultStyle: {
+      font: 'Roboto',
       fontSize: 12,
     },
     styles: {
+      italicStyle: {
+        italics: true,
+      },
       header: {
         fontSize: 14,
         bold: true,
@@ -198,6 +212,12 @@ const createPdfDefinition = (json: PdfData): TDocumentDefinitions => {
 
 export const generatePDF = async (contentArray: PdfData) => {
   // pdfMake.fonts = {
+  //   Roboto: {
+  //     normal: 'Roboto-Regular.ttf',
+  //     bold: 'Roboto-Medium.ttf',
+  //     italics: 'Roboto-Italic.ttf',
+  //     bolditalics: 'Roboto-Italic.ttf',
+  //   },
   //   Courier: {
   //     normal: 'Courier',
   //     bold: 'Courier-Bold',

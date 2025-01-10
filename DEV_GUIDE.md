@@ -1,4 +1,4 @@
-# OWASP Verify
+# owasp-bp
 
 A command-line tool to execute OWASP verification.
 
@@ -7,7 +7,15 @@ A command-line tool to execute OWASP verification.
 Install the package globally with npm:
 
 ```bash
-npm install -g owasp-bp
+npm run bp-i
+```
+
+## Uninstallation
+
+To uninstall the package globally, use:
+
+```bash
+npm run bp-u
 ```
 
 ## Usage

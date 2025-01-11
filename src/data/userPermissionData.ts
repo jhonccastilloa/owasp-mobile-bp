@@ -166,7 +166,7 @@ export const REQUIRED_PERMISSIONS_BY_USER: Record<string, UserPermission> = {
   WRITE_EXTERNAL_STORAGE: {
     requiredDependencies: [],
     severity: "E",
-    message: "Este oermiso ya no tiene efecto en API mayor a 30",
+    message: "Este permiso ya no tiene efecto en versiones de API superiores a 30.",
     owaspCategory: "M2",
   },
 

@@ -36,14 +36,14 @@ const createPdfDefinition = (json: PdfData): TDocumentDefinitions => {
           },
         ],
         style: 'header',
-        margin: [0, 10, 0, 5],
+        margin: [0, 10, 0, 10],
       });
 
       json.owasp[category].permissions.forEach((permission: PermissionData) => {
         let statusColor = 'orange';
         if (permission.status === 'OK') {
           statusColor = 'green';
-        } else if (permission.status === 'ERROR') {
+        } else if (permission.status === 'ERROR' || permission.status === 'DUPLICATE') {
           statusColor = 'red';
         }
 
@@ -76,16 +76,17 @@ const createPdfDefinition = (json: PdfData): TDocumentDefinitions => {
         acc.push({
           stack: [
             {
-              text: [
-                { text: `${permission.status}`, color: statusColor },
+              text: [ 
+                { text: `${permission.status} |`, color: statusColor, bold: true },
                 {
-                  text: ` ${permission.permission} - ${
-                    permission.message || 'Sin descripción.'
-                  }`,
-                  color: 'black',
+                  text: [
+                    { text: ` ${permission.permission}`, color: 'black', bold: true }, 
+                    { text: ` - ${permission.message || 'Sin descripción.'}`, color: 'black' }
+                  ]
                 },
               ],
-              margin: [0, 0, 0, 5],
+              
+              margin: [0, 5, 0, 5],
             },
             ...extraContent,
           ],
@@ -102,14 +103,37 @@ const createPdfDefinition = (json: PdfData): TDocumentDefinitions => {
     content: [
       {
         table: {
+          widths: ['99%'],
+          body: [
+            [
+              {
+                text: 'OWASP Top Ten Mobile',
+                style: 'title',
+                alignment: 'center',
+                padding: [10, 10, 10, 10], 
+              },
+            ],
+          ],
+        },
+        layout: {
+          hLineWidth: (i, node) => (i === 0 ? 1.5 : 0),
+          vLineWidth: (i, node) => {return  1.5; }, 
+          hLineColor: () => '#020204', 
+          vLineColor: () => '#020204', 
+        },
+        margin: [0, 0, 0, 0], 
+      },
+
+      {
+        table: {
           widths: ['33%', '33%', '33%'],
           body: [
             [
               {
                 stack: [
-                  { text: 'Nombre de la aplicación:', style: 'subtitle' },
+                  { text: 'Application Name:', style: 'subtitle' },
                   { text: json.appName },
-                  { text: 'Estado:', style: 'subtitle', margin: [0, 10, 0, 0] },
+                  { text: 'Status:', style: 'subtitle', margin: [0, 10, 0, 0] },
                   { text: json.percentageLabel },
                 ],
               },
@@ -123,14 +147,14 @@ const createPdfDefinition = (json: PdfData): TDocumentDefinitions => {
               },
               {
                 stack: [
-                  { text: 'Fecha:', style: 'subtitle' },
+                  { text: 'Date:', style: 'subtitle' },
                   { text: json.date },
                   {
-                    text: 'Umbral de Calidad:',
+                    text: 'Quality Level:',
                     style: 'subtitle',
                     margin: [0, 10, 0, 0],
                   },
-                  { text: json.status ? 'OK' : 'ERROR' },
+                  { text: json.status == 'Rejected' ? 'Not Passed' : 'Passed' }
                 ],
               },
             ],
@@ -138,17 +162,19 @@ const createPdfDefinition = (json: PdfData): TDocumentDefinitions => {
         },
         layout: {
           hLineWidth: (i: any, node: any) =>
-            i === 0 || i === node.table.body.length ? 1 : 0,
+            i === 0 || i === node.table.body.length ? 1.5 : 0,
           vLineWidth: (i: any, node: any) =>
-            i === 0 || i === node.table.widths.length ? 1 : 0,
-          hLineColor: () => '#008000',
-          vLineColor: () => '#008000',
-          paddingLeft: () => 15,
-          paddingRight: () => 15,
-          paddingTop: () => 15,
-          paddingBottom: () => 15,
+            i === 0 || i === node.table.widths.length ? 1.5 : 0,
+          hLineColor: () => '#020204',
+          vLineColor: () => '#020204',
+          paddingLeft: () => 20,
+          paddingRight: () => 10,
+          paddingTop: () => 10,
+          paddingBottom: () => 10,
+          marginTop:() => 20
+
         },
-        margin: [0, 0, 0, 10],
+        margin: [0, 0, 0, 0],
       },
       ...owaspBlocks,
     ],
@@ -164,6 +190,7 @@ const createPdfDefinition = (json: PdfData): TDocumentDefinitions => {
         fontSize: 14,
         bold: true,
         alignment: 'center',
+        color:'#242426',
       },
       tableHeader: {
         bold: true,
@@ -178,6 +205,11 @@ const createPdfDefinition = (json: PdfData): TDocumentDefinitions => {
         fontSize: 16,
         bold: true,
         margin: [0, 10],
+      },
+      title: {
+        fontSize: 14,
+        bold: true,
+        margin: [5, 5, 5, 5],
       },
       cardTitle: {
         fontSize: 14,

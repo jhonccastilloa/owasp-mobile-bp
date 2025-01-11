@@ -20,9 +20,7 @@ const verifyPermissions = ({
   const owaspValidate: PermissionData[] = [];
   for (const [mainKey, data] of Object.entries(permissions)) {
     const regex = regexFn(mainKey);
-
-    const matchData = regex.exec(strData);
-
+    let matchData: RegExpExecArray | null;
     const permission: PermissionData = {
       permission: mainKey,
       owaspCategory: data.owaspCategory,
@@ -32,17 +30,17 @@ const verifyPermissions = ({
       status: PermissionStatus.NOT_FOUND,
       nameFile,
     };
-    if (!matchData) {
-      permission.status = PermissionStatus.NOT_FOUND;
-    } else {
+    const permissions: PermissionData[] = []
+    while ((matchData = regex.exec(strData)) !== null) {
       const numLine = linesUpToMatch(strData, matchData.index);
       permission.numLine = numLine;
-      permission.status = validateSeverity(
+      permission.status = permissions.length >= 1 ? PermissionStatus.DUPLICATE : validateSeverity(
         data.severity,
         data.values.includes(matchData[groupRegexPos])
       );
+      permissions.push({ ...permission });
     }
-    owaspValidate.push(permission);
+    owaspValidate.push(...permissions.length > 0 ? permissions : [permission]);
   }
   return owaspValidate;
 };

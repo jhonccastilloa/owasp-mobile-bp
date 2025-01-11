@@ -13,7 +13,7 @@ const verifyBuildGradle = async (
 
   return verifyPermissions({
     strData: readData,
-    regexFn: mainKey => new RegExp(`${mainKey}\\s*=\\s*(\\d+)`),
+    regexFn: mainKey => new RegExp(`${mainKey}\\s*=\\s*(\\d+)`, 'g'),
     permissions: BUILD_GRADLE_DATA,
     nameFile,
   });

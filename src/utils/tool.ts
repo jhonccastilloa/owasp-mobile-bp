@@ -20,7 +20,7 @@ export const cleanComentaries = (data: string) => {
 
 export const validateSeverity = (
   severity: OwaspSeverity,
-  status: boolean
+  status: boolean,
 ): PermissionStatus => {
   switch (severity) {
     case 'E':

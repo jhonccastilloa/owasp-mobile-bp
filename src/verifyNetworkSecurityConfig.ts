@@ -22,7 +22,7 @@ const verifyNetworkSecurityConfig = async (
 
   return verifyPermissions({
     strData: readData,
-    regexFn: mainKey => new RegExp(`${mainKey}\\s*=\\s*"([^b]*)"`),
+    regexFn: mainKey => new RegExp(`${mainKey}\\s*=\\s*"([^b]*)"`, 'g'),
     permissions: NETWORK_SECURITY_CONFIG_DATA,
     nameFile,
   });

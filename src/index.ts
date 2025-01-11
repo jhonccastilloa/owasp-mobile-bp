@@ -19,16 +19,14 @@ const main = async () => {
 
       const userPermissions = await verifyUserPermissions(currentPath);
       const generalPermissions = await checkPermissionsGeneral(currentPath);
-
       const buildGradle = await verifyBuildGradle(currentPath);
-
       const networkSecurity = await verifyNetworkSecurityConfig(currentPath);
-
       const printJava = await foundPrintJava(currentPath);
 
       const currentBranch = execSync('git rev-parse --abbrev-ref HEAD', {
         encoding: 'utf-8',
       }).trim();
+      
       const appJson = JSON.parse(
         fs.readFileSync(path.join(currentPath, 'app.json'), 'utf-8')
       );

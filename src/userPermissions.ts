@@ -7,6 +7,7 @@ import {
   linesUpToMatch,
   validateSeverity,
 } from './utils/tool';
+import { PermissionStatus } from './types/enums';
 
 interface AMUserPermision {
   permission: string;
@@ -64,13 +65,16 @@ const verifyUserPermissions = async (
           requiredPermission.requiredDependencies.some(dep =>
             dependencies.has(dep)
           );
+        const isDuplicated = !!owaspPermission.find(
+          item => item.permission === manifestPermission.permission
+        );
         const data: PermissionData = {
           permission: manifestPermission.permission,
           numLine: manifestPermission.numLine,
           owaspCategory: requiredPermission.owaspCategory,
           severity: requiredPermission.severity,
           message: requiredPermission.message,
-          status: validateSeverity(
+          status: isDuplicated ? PermissionStatus.DUPLICATE : validateSeverity(
             requiredPermission.severity,
             hasRequiredDependency
           ),

@@ -21,7 +21,7 @@ const checkPermissionsGeneral = async (
   readData = cleanComentaries(readData);
   return verifyPermissions({
     strData: readData,
-    regexFn: mainKey => new RegExp(`${mainKey}\\s*=\\s*"([^"]+)"`),
+    regexFn: mainKey => new RegExp(`${mainKey}\\s*=\\s*"([^"]+)"`, 'g'),
     permissions: REQUIRED_PERMISSIONS,
     nameFile,
   });

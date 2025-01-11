@@ -40,11 +40,17 @@ const createPdfDefinition = (json: PdfData): TDocumentDefinitions => {
       });
 
       json.owasp[category].permissions.forEach((permission: PermissionData) => {
-        let statusColor = 'orange';
+        let statusColor = '#fd7e14';
         if (permission.status === 'OK') {
-          statusColor = 'green';
-        } else if (permission.status === 'ERROR' || permission.status === 'DUPLICATE') {
-          statusColor = 'red';
+          statusColor = '#28a745';
+        } else if (permission.status === 'ERROR') {
+          statusColor = '#dc3545';
+        }
+        else if (permission.status === 'DUPLICATE') {
+          statusColor = '#6f42c1';
+        }
+        else if (permission.status === 'NOT FOUND') {
+          statusColor = '#6c757d';
         }
 
         let extraContent = [];

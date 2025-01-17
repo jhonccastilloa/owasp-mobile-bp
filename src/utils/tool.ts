@@ -1,26 +1,36 @@
+import path from 'path';
 import { PermissionStatus } from '../types/enums';
 import { OwaspSeverity } from '../types/global';
+import fs from 'fs';
 
-export const cleanComentaries = (data: string) => {
+const cleanAndReplace = (data: string, regex: RegExp) => {
   let match: RegExpExecArray | null;
-  const regex = /<!--([\s\S]*?)-->/g;
-
+  let newData = data;
   while ((match = regex.exec(data)) !== null) {
-    data = data.replace(
+    newData = newData.replace(
       match[0],
       match[0]
         .split('\n')
-        .map((_, i) => i)
+        .map(() => '')
         .join('\n')
     );
   }
+  return newData;
+};
 
-  return data;
+export const cleanXmlComentaries = (data: string) => {
+  const regexComments = /<!--([\s\S]*?)-->/g;
+  return cleanAndReplace(data, regexComments);
+};
+
+export const cleanJavaComments = (data: string) => {
+  const regexComments = /\/\/.*?$|\/\*[\s\S]*?\*\//gm;
+  return cleanAndReplace(data, regexComments);
 };
 
 export const validateSeverity = (
   severity: OwaspSeverity,
-  status: boolean,
+  status: boolean
 ): PermissionStatus => {
   switch (severity) {
     case 'E':
@@ -35,9 +45,11 @@ export const validateSeverity = (
 export const linesUpToMatch = (data: string, matchPosition: number) =>
   data.substring(0, matchPosition).split('\n').length;
 
-export const getPercentage = (x: number, y: number) => transformPercentage(x / y);
+export const getPercentage = (x: number, y: number) =>
+  transformPercentage(x / y);
 
-export const transformPercentage = (value: number) => Math.floor(value * 100) / 100;
+export const transformPercentage = (value: number) =>
+  Math.floor(value * 100) / 100;
 
 export const evaluateStatus = (percentage: number) => {
   if (typeof percentage !== 'number' || percentage < 0 || percentage > 100) {
@@ -65,5 +77,41 @@ export const evaluateStatus = (percentage: number) => {
     return {
       category: 'Rejected',
     };
+  }
+};
+
+export const searchFile = async (
+  currentPath: string,
+  nameFile: string
+): Promise<null | string> => {
+  try {
+    if (!fs.existsSync(currentPath)) {
+      return null;
+    }
+
+    const files = await fs.promises.readdir(currentPath);
+
+    for (const file of files) {
+      const filePath = path.resolve(currentPath, file);
+
+      let stats;
+      try {
+        stats = await fs.promises.lstat(filePath);
+      } catch (err) {
+        console.error(`⚠️ No se pudo leer: ${filePath}`);
+        continue;
+      }
+
+      if (stats.isDirectory()) {
+        const result = await searchFile(filePath, nameFile);
+        if (result) return result;
+      } else if (file === nameFile) {
+        return await fs.promises.readFile(filePath, 'utf8');
+      }
+    }
+
+    return null;
+  } catch (error) {
+    return null;
   }
 };

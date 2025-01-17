@@ -3,7 +3,7 @@ import path from 'path';
 import { REQUIRED_PERMISSIONS_BY_USER } from './data';
 import { PermissionData } from './types/global';
 import {
-  cleanComentaries,
+  cleanXmlComentaries,
   linesUpToMatch,
   validateSeverity,
 } from './utils/tool';
@@ -24,7 +24,7 @@ const getManifestPermissions = async (
   androidManifestFilePath: string
 ): Promise<AMUserPermision[]> => {
   const readData = await fs.promises.readFile(androidManifestFilePath, 'utf-8');
-  const data = cleanComentaries(readData);
+  const data = cleanXmlComentaries(readData);
   const regex = /<uses-permission\s+android:name\s*?=\s*?"([^"]+)"/g;
   let match: RegExpExecArray | null;
   const permissions: AMUserPermision[] = [];
@@ -74,10 +74,12 @@ const verifyUserPermissions = async (
           owaspCategory: requiredPermission.owaspCategory,
           severity: requiredPermission.severity,
           message: requiredPermission.message,
-          status: isDuplicated ? PermissionStatus.DUPLICATE : validateSeverity(
-            requiredPermission.severity,
-            hasRequiredDependency
-          ),
+          status: isDuplicated
+            ? PermissionStatus.DUPLICATE
+            : validateSeverity(
+                requiredPermission.severity,
+                hasRequiredDependency
+              ),
           nameFile: 'AndroidManifext.xml',
         };
         owaspPermission.push(data);

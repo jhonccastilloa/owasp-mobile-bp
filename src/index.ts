@@ -9,6 +9,7 @@ import verifyBuildGradle from './verifyBuildGradle';
 import verifyNetworkSecurityConfig from './verifyNetworkSecurityConfig';
 
 import { generatePDF, transformPdfdata } from './pdfMake';
+import { verifyTapjacking } from './verifyTapjacking';
 
 const main = async () => {
   const args = process.argv.slice(2);
@@ -17,6 +18,7 @@ const main = async () => {
     case 'verify':
       const currentPath = process.cwd();
 
+      const tapjackingResult = await verifyTapjacking(currentPath);
       const userPermissions = await verifyUserPermissions(currentPath);
       const generalPermissions = await checkPermissionsGeneral(currentPath);
       const buildGradle = await verifyBuildGradle(currentPath);
@@ -26,7 +28,7 @@ const main = async () => {
       const currentBranch = execSync('git rev-parse --abbrev-ref HEAD', {
         encoding: 'utf-8',
       }).trim();
-      
+
       const appJson = JSON.parse(
         fs.readFileSync(path.join(currentPath, 'app.json'), 'utf-8')
       );
@@ -39,6 +41,9 @@ const main = async () => {
       ];
       if (printJava) {
         arrData.push(printJava);
+      }
+      if (tapjackingResult) {
+        arrData.push(tapjackingResult);
       }
       const owaspTransformData = transformPdfdata(arrData);
       const today = new Date();

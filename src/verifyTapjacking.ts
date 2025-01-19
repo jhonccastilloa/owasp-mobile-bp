@@ -5,7 +5,6 @@ import { cleanJavaComments, searchFile } from './utils/tool';
 
 const regexOnCreate =
   /protected\s+void\s+onCreate\s*\(Bundle\s+savedInstanceState\) \{([\s\S]*?)\}/;
-
 const regexCondition = /\/\/if\s*\([^)]*\)\s*\{[^}]*\}\s*/g;
 
 const codeRegex =

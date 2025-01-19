@@ -10,6 +10,7 @@ import verifyNetworkSecurityConfig from './verifyNetworkSecurityConfig';
 
 import { generatePDF, transformPdfdata } from './pdfMake';
 import { verifyTapjacking } from './verifyTapjacking';
+import { checkCertificateSSLPinning } from './verifySSLPiningAndroid';
 
 const main = async () => {
   const args = process.argv.slice(2);
@@ -18,6 +19,7 @@ const main = async () => {
     case 'verify':
       const currentPath = process.cwd();
 
+      const sslPinningResult = await checkCertificateSSLPinning(currentPath);
       const tapjackingResult = await verifyTapjacking(currentPath);
       const userPermissions = await verifyUserPermissions(currentPath);
       const generalPermissions = await checkPermissionsGeneral(currentPath);
@@ -45,6 +47,10 @@ const main = async () => {
       if (tapjackingResult) {
         arrData.push(tapjackingResult);
       }
+      if (sslPinningResult) {
+        arrData.push(sslPinningResult);
+      }
+
       const owaspTransformData = transformPdfdata(arrData);
       const today = new Date();
       const data: PdfData = {

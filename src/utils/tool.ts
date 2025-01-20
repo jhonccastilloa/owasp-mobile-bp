@@ -24,7 +24,7 @@ export const cleanXmlComentaries = (data: string) => {
 };
 
 export const cleanJavaComments = (data: string) => {
-  const regexComments = /\/\/.*?$|\/\*[\s\S]*?\*\//gm;
+  const regexComments = /(?<!https?:)\/\/.*?$|\/\*[\s\S]*?\*\//gm;
   return cleanAndReplace(data, regexComments);
 };
 

@@ -7,6 +7,7 @@ import { execSync } from 'child_process';
 import { PdfData } from './types/global';
 import verifyBuildGradle from './verifyBuildGradle';
 import verifyNetworkSecurityConfig from './verifyNetworkSecurityConfig';
+import foundVulnerableLibraries from './foundVulnerableLibraries';
 
 import { generatePDF, transformPdfdata } from './pdfMake';
 import { verifyTapjacking } from './verifyTapjacking';
@@ -24,6 +25,7 @@ const main = async () => {
       const buildGradle = await verifyBuildGradle(currentPath);
       const networkSecurity = await verifyNetworkSecurityConfig(currentPath);
       const printJava = await foundPrintJava(currentPath);
+      const vulnerableLibraries = await foundVulnerableLibraries(currentPath);
 
       const currentBranch = execSync('git rev-parse --abbrev-ref HEAD', {
         encoding: 'utf-8',
@@ -41,6 +43,9 @@ const main = async () => {
       ];
       if (printJava) {
         arrData.push(printJava);
+      }
+      if (vulnerableLibraries) {
+        arrData.push(vulnerableLibraries);
       }
       if (tapjackingResult) {
         arrData.push(tapjackingResult);

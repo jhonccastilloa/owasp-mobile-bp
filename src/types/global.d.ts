@@ -25,6 +25,7 @@ export interface PermissionData extends Permission {
   status: PermissionStatus;
   permission: string;
   extraData?: Report[];
+  libraryReports? : DependencyReport[];
   nameFile?: string;
 }
 
@@ -65,3 +66,26 @@ type OwaspCategory =
 export interface Owasp {
   title: string;
 }
+
+interface DependencyReport {
+  library: string;
+  version: string;
+  description: string;
+  vulnId: string;
+  severity: string;
+  owaspCategory: string;
+  url: string;
+}
+
+export interface LibraryVulnerability {
+  package: string; 
+  minVersion: number | string; 
+  maxVersion: string;
+  vulnId: string; 
+  description: string; 
+  url: string; 
+  severity: string; 
+  owaspCategory: string; 
+}
+
+

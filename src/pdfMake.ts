@@ -68,6 +68,22 @@ const createPdfDefinition = (json: PdfData): TDocumentDefinitions => {
             ],
             margin: [10, 5, 0, 5],
           }));
+        }else if(permission.permission === 'Librerias Vulnerables' &&
+          permission.libraryReports){
+
+            extraContent = permission.libraryReports.map(extra => ({
+              text: [
+                { text: 'Librería: ', bold: true }, 
+                { text: `${extra.library}\n` }, 
+                { text: 'Versión: ', bold: true }, 
+                { text: `${extra.version}\n`, style: 'italicStyle' }, 
+                { text: 'Descripción: ', bold: true },
+                { text: `${extra.description}\n`, style: 'italicStyle' }, 
+              ],
+              margin: [10, 5, 0, 5],
+            }));
+            
+
         } else {
           extraContent = [
             {

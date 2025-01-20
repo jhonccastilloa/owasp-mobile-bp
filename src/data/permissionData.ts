@@ -4,28 +4,26 @@ export const REQUIRED_PERMISSIONS: Record<string, GeneralPermission> = {
   ['android:allowBackup']: {
     values: ['false'],
     severity: 'E',
-    message:
-      'La aplicación no permite que sus datos se incluyan en copias de seguridad.',
-    owaspCategory: 'M2',
+    message: 'La aplicación no permite que sus datos se incluyan en copias de seguridad.',
+    owaspCategory: 'M9',
   },
   ['android:debuggable']: {
     values: ['false'],
     severity: 'E',
-    message:
-      'La instalación está restringida al almacenamiento interno, evitando riesgos de seguridad.',
-    owaspCategory: 'M9',
+    message: 'La instalación está restringida al almacenamiento interno, evitando riesgos de seguridad.',
+    owaspCategory: 'M7',
   },
   ['android:installLocation']: {
     values: ['internalOnly'],
     severity: 'E',
-    message: 'La aplicación no es depurable en entornos de producción. ',
-    owaspCategory: 'M1',
+    message: 'La aplicación no es depurable en entornos de producción.',
+    owaspCategory: 'M9',
   },
   ['android:launchMode']: {
     values: ['singleInstance'],
     severity: 'E',
-    message: 'El manejo de actividades previene aperturas indebidas',
-    owaspCategory: 'M7',
+    message: 'El manejo de actividades previene aperturas indebidas.',
+    owaspCategory: 'M3',
   },
   // ['android:configChanges']: {
   //   values: ['false'],

@@ -6,13 +6,13 @@ export const BUILD_GRADLE_DATA: Record<string, GeneralPermission> = {
     severity: 'W',
     message:
       'Se usa una versión mínima segura para evitar vulnerabilidades obsoletas.',
-    owaspCategory: 'M1',
+    owaspCategory: 'M2',
   },
   compileSdkVersion: {
     values: ['34'],
     severity: 'W',
     message:
       'La app se compila con la última versión del SDK, maximizando la seguridad.',
-    owaspCategory: 'M1',
+    owaspCategory: 'M8',
   },
 };

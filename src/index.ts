@@ -2,10 +2,12 @@ import fs from 'fs';
 import path from 'path';
 import foundPrintJava from './foundPrintJava';
 import verifyUserPermissions from './userPermissions';
-import checkPermissionsGeneral from './checkPermissionsGeneral';
+import checkPermissionsGeneral, {
+  repairPermissions,
+} from './checkPermissionsGeneral';
 import { execSync } from 'child_process';
 import { PdfData } from './types/global';
-import verifyBuildGradle from './verifyBuildGradle';
+import verifyBuildGradle, { repairBuildGradle } from './verifyBuildGradle';
 import verifyNetworkSecurityConfig from './verifyNetworkSecurityConfig';
 import foundVulnerableLibraries from './foundVulnerableLibraries';
 
@@ -15,11 +17,9 @@ import { checkCertificateSSLPinning } from './verifySSLPiningAndroid';
 
 const main = async () => {
   const args = process.argv.slice(2);
-
+  const currentPath = process.cwd();
   switch (args[0]) {
     case 'verify':
-      const currentPath = process.cwd();
-
       const sslPinningResult = await checkCertificateSSLPinning(currentPath);
       const tapjackingResult = await verifyTapjacking(currentPath);
       const userPermissions = await verifyUserPermissions(currentPath);
@@ -66,6 +66,12 @@ const main = async () => {
       };
       generatePDF(data);
 
+      break;
+    case 'automate':
+      repairPermissions(currentPath);
+      console.log('✅ Permisos reparados.');
+      repairBuildGradle(currentPath);
+      console.log('✅ Build Gradle reparado.');
       break;
 
     default:

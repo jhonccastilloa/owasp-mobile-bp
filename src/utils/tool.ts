@@ -6,16 +6,19 @@ import fs from 'fs';
 const cleanAndReplace = (data: string, regex: RegExp) => {
   let match: RegExpExecArray | null;
   let newData = data;
+  const comments: string[] = [];
   while ((match = regex.exec(data)) !== null) {
+    const commentSplit = match[0].split('\n');
     newData = newData.replace(
       match[0],
       match[0]
         .split('\n')
-        .map(() => '')
+        .map((_, i) => `<!--COMMENT_${comments.length + i}-->`)
         .join('\n')
     );
+    comments.push(...commentSplit);
   }
-  return newData;
+  return { newData, comments };
 };
 
 export const cleanXmlComentaries = (data: string) => {
@@ -23,9 +26,13 @@ export const cleanXmlComentaries = (data: string) => {
   return cleanAndReplace(data, regexComments);
 };
 
-export const cleanJavaComments = (data: string) => {
+export const cleanBlockAndLineComment = (data: string) => {
   const regexComments = /(?<!https?:)\/\/.*?$|\/\*[\s\S]*?\*\//gm;
   return cleanAndReplace(data, regexComments);
+};
+
+export const recuperateComments = (data: string, comments: string[]) => {
+  return data.replace(/<!--COMMENT_(\d+)-->/g, (_, index) => comments[index]);
 };
 
 export const validateSeverity = (

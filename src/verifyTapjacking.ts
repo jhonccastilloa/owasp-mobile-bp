@@ -1,7 +1,7 @@
 import path from 'path';
 import { PermissionData } from './types/global';
 import { PermissionStatus } from './types/enums';
-import { cleanJavaComments, searchFile } from './utils/tool';
+import { cleanBlockAndLineComment, searchFile } from './utils/tool';
 
 const regexOnCreate =
   /protected\s+void\s+onCreate\s*\(Bundle\s+savedInstanceState\) \{([\s\S]*?)\}/;
@@ -30,7 +30,7 @@ export const verifyTapjacking = async (currentPath: string) => {
       'MainActivity.java'
     );
     if (content) {
-      const cleanComments = cleanJavaComments(content);
+      const cleanComments = cleanBlockAndLineComment(content).newData;
       const cleanCondition = cleanComments.replace(regexCondition, '');
       const match = cleanCondition.match(regexOnCreate);
       if (

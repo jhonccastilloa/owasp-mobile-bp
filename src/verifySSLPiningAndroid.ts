@@ -2,7 +2,7 @@ import tls from 'tls';
 import crypto from 'crypto';
 import path from 'path';
 import fs from 'fs';
-import { cleanJavaComments, searchFile } from './utils/tool';
+import { cleanBlockAndLineComment, searchFile } from './utils/tool';
 import { PermissionData } from './types/global';
 import { PermissionStatus } from './types/enums';
 
@@ -30,7 +30,7 @@ export const checkCertificateSSLPinning = async (
       'SSLPinnerFactory.java'
     );
     if (sslPinningContent) {
-      const cleanComments = cleanJavaComments(sslPinningContent);
+      const cleanComments = cleanBlockAndLineComment(sslPinningContent).newData;
       const matchHostname = cleanComments.match(regexHostname);
       const matchFingerprint = cleanComments.match(regexFingerprint);
       if (matchHostname && matchFingerprint) {

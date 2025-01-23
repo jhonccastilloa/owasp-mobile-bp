@@ -24,7 +24,7 @@ const getManifestPermissions = async (
   androidManifestFilePath: string
 ): Promise<AMUserPermision[]> => {
   const readData = await fs.promises.readFile(androidManifestFilePath, 'utf-8');
-  const data = cleanXmlComentaries(readData);
+  const { newData: data } = cleanXmlComentaries(readData);
   const regex = /<uses-permission\s+android:name\s*?=\s*?"([^"]+)"/g;
   let match: RegExpExecArray | null;
   const permissions: AMUserPermision[] = [];

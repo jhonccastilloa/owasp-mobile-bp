@@ -2,7 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import { PermissionData, Report } from './types/global';
 import { PermissionStatus } from './types/enums';
-import { cleanJavaComments } from './utils/tool';
+import { cleanBlockAndLineComment } from './utils/tool';
 
 const LOGS_PATTERNS = [
   'System.out.printf',
@@ -24,7 +24,7 @@ const searchInFiles = async (directory: string, report: Report[]) => {
       } else if (file.endsWith('.java')) {
         try {
           const data = await fs.promises.readFile(filePath, 'utf8');
-          const lines = cleanJavaComments(data).split('\n');
+          const lines = cleanBlockAndLineComment(data).newData.split('\n');
           const findReport: Record<string, Report> = {};
 
           lines.forEach((line, index) => {

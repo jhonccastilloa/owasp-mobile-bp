@@ -73,7 +73,7 @@ interface DependencyReport {
   description: string;
   vulnId: string;
   severity: string;
-  owaspCategory: string;
+  owaspCategory: OwaspCategory;
   url: string;
 }
 
@@ -85,7 +85,7 @@ export interface LibraryVulnerability {
   description: string; 
   url: string; 
   severity: string; 
-  owaspCategory: string; 
+  owaspCategory: OwaspCategory; 
 }
 
 

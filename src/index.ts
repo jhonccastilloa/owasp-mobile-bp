@@ -8,7 +8,9 @@ import checkPermissionsGeneral, {
 import { execSync } from 'child_process';
 import { PdfData } from './types/global';
 import verifyBuildGradle, { repairBuildGradle } from './verifyBuildGradle';
-import verifyNetworkSecurityConfig from './verifyNetworkSecurityConfig';
+import verifyNetworkSecurityConfig, {
+  repairNetworkSecurityConfig,
+} from './verifyNetworkSecurityConfig';
 import foundVulnerableLibraries from './foundVulnerableLibraries';
 
 import { generatePDF, transformPdfdata } from './pdfMake';
@@ -72,6 +74,8 @@ const main = async () => {
       console.log('✅ Permisos reparados.');
       repairBuildGradle(currentPath);
       console.log('✅ Build Gradle reparado.');
+      repairNetworkSecurityConfig(currentPath);
+      console.log('✅ Network Security Config reparado.');
       break;
 
     default:

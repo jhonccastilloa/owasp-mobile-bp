@@ -2,7 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import { PermissionData, Report } from './types/global';
 import { PermissionStatus } from './types/enums';
-import { cleanBlockAndLineComment } from './utils/tool';
+import { cleanBlockAndLineComment, recuperateComments } from './utils/tool';
 
 const LOGS_PATTERNS = [
   'System.out.printf',
@@ -74,6 +74,37 @@ const foundPrintJava = async (directory: string) => {
     return data;
   } catch (err) {
     console.error('Error durante la búsqueda', err);
+  }
+};
+
+export const deleteLogsInJava = async (directory: string) => {
+  try {
+    const files = await fs.promises.readdir(directory);
+
+    const filePromises = files.map(async file => {
+      const filePath = path.join(directory, file);
+
+      if (fs.lstatSync(filePath).isDirectory()) {
+        await deleteLogsInJava(filePath);
+      } else if (file.endsWith('.java')) {
+        const data = await fs.promises.readFile(filePath, 'utf8');
+        const { newData, comments } = cleanBlockAndLineComment(data);
+        const filteredContent = newData
+          .split('\n')
+          .filter(
+            line => !LOGS_PATTERNS.some(pattern => line.includes(pattern))
+          )
+          .join('\n');
+        fs.writeFileSync(
+          filePath,
+          recuperateComments(filteredContent, comments),
+          'utf8'
+        );
+      }
+    });
+    await Promise.all(filePromises);
+  } catch (err) {
+    console.error(`Error leyendo el directorio: ${directory}`, err);
   }
 };
 

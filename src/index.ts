@@ -1,6 +1,6 @@
 import fs from 'fs';
 import path from 'path';
-import foundPrintJava from './foundPrintJava';
+import foundPrintJava, { deleteLogsInJava } from './foundPrintJava';
 import verifyUserPermissions from './userPermissions';
 import checkPermissionsGeneral, {
   repairPermissions,
@@ -76,6 +76,8 @@ const main = async () => {
       console.log('✅ Build Gradle reparado.');
       repairNetworkSecurityConfig(currentPath);
       console.log('✅ Network Security Config reparado.');
+      await deleteLogsInJava(currentPath);
+      console.log('✅ Logs eliminados en Java.');
       break;
 
     default:

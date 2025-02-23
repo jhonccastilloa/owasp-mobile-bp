@@ -12,7 +12,7 @@ const main = async () => {
       break;
     default:
       console.log(
-        "Comando no reconocido. Usa 'swasp verify' para verificar el proyecto."
+        "Comando no reconocido. Usa 'owasp -verify' para verificar el proyecto."
       );
       break;
   }

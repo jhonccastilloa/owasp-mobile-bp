@@ -19,12 +19,12 @@ const buildGradleFix = async (currentPath: string) => {
     if (regex.test(buildGradleNoComment)) {
       buildGradleNoComment = buildGradleNoComment.replace(
         regex,
-        `${key}=${valueTransform}`
+        `${key} = ${valueTransform}`
       );
     } else {
       buildGradleNoComment = buildGradleNoComment.replace(
         /ext\s*{/,
-        `ext { \n\t\t${key}=${valueTransform}`
+        `ext { \n\t\t${key} = ${valueTransform}`
       );
     }
   });

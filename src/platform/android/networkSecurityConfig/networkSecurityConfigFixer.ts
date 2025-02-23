@@ -14,24 +14,13 @@ const networkSecurityConfigFix = async (currentPath: string) => {
   Object.entries(NETWORK_SECURITY_CONFIG_RULES).forEach(([key, data]) => {
     const regex = networkRegex(key);
     const value = data.values[0];
-
-    if (regex.test(networkSecurityConfigNoComment)) {
-      networkSecurityConfigNoComment = networkSecurityConfigNoComment.replace(
-        regex,
-        `${key}="${value}"`
-      );
-    } else {
-      networkSecurityConfigNoComment = networkSecurityConfigNoComment.replace(
-        /<network-security-config/,
-        `<network-security-config ${key}="${value}"`
-      );
-    }
+    const match = regex.exec(networkSecurityConfigNoComment);
+    if (match?.[1] === value) return;
+    networkSecurityConfigNoComment = networkSecurityConfigNoComment.replace(
+      /<domain-config[^>]*>[\s\S]*?<\/domain-config>/g,
+      '<base-config cleartextTrafficPermitted="false" />'
+    );
   });
-
-  networkSecurityConfigNoComment = networkSecurityConfigNoComment.replace(
-    /^\s*<domain.*?<\/domain>\s*$/gm,
-    ''
-  );
 
   fs.writeFileSync(
     getNetworkSecurityConfigPath(currentPath),

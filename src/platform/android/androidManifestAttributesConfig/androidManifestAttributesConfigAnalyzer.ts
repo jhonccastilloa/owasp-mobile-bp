@@ -10,13 +10,15 @@ import {
 const androidManifestAttributesConfigAnalyze = async (
   currentPath: string
 ): Promise<PermissionData[]> => {
-  const readAndroidManifest = await getAndroidManifestFile(currentPath);
+  const { androidManifestWithoutComments } = await getAndroidManifestFile(
+    currentPath
+  );
   return verifyPermissions({
-    strData: readAndroidManifest,
+    strData: androidManifestWithoutComments,
     regexFn: createPermissionRegex,
     permissions: ANDROID_ATTRIBUTES_RULES,
     nameFile: androidManifestName,
-  }); 
+  });
 };
 
 export default androidManifestAttributesConfigAnalyze;

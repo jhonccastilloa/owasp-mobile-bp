@@ -5,19 +5,21 @@ import {
   getAndroidManifestFile,
   getAndroidManifestPath,
 } from './androidManifestAttributesConfigUtils';
+import { recuperateComments } from '@/utils/tool';
 
 const androidManifestAttributesConfigFix = async (currentPath: string) => {
-  let readAndroidManifest = await getAndroidManifestFile(currentPath);
+  let { androidManifestWithoutComments, comments } =
+    await getAndroidManifestFile(currentPath);
   Object.entries(ANDROID_ATTRIBUTES_RULES).forEach(([key, data]) => {
     const regex = createPermissionRegex(key);
     const value = data.values[0];
-    if (regex.test(readAndroidManifest)) {
-      readAndroidManifest = readAndroidManifest.replace(
+    if (regex.test(androidManifestWithoutComments)) {
+      androidManifestWithoutComments = androidManifestWithoutComments.replace(
         regex,
         `${key}="${value}"`
       );
     } else {
-      readAndroidManifest = readAndroidManifest.replace(
+      androidManifestWithoutComments = androidManifestWithoutComments.replace(
         /<application/,
         `<application ${key}="${value}" `
       );
@@ -25,7 +27,7 @@ const androidManifestAttributesConfigFix = async (currentPath: string) => {
   });
   fs.writeFileSync(
     getAndroidManifestPath(currentPath),
-    readAndroidManifest,
+    recuperateComments(androidManifestWithoutComments, comments),
     'utf8'
   );
 };

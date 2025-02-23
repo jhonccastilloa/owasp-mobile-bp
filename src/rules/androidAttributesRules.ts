@@ -8,13 +8,13 @@ export const ANDROID_ATTRIBUTES_RULES: Record<string, GeneralPermission> = {
       'La aplicación no permite que sus datos se incluyan en copias de seguridad.',
     owaspCategory: 'M9',
   },
-  ['android:debuggable']: {
-    values: ['false'],
-    severity: 'E',
-    message:
-      'La instalación está restringida al almacenamiento interno, evitando riesgos de seguridad.',
-    owaspCategory: 'M7',
-  },
+  // ['android:debuggable']: {
+  //   values: ['false'],
+  //   severity: 'E',
+  //   message:
+  //     'La instalación está restringida al almacenamiento interno, evitando riesgos de seguridad.',
+  //   owaspCategory: 'M7',
+  // },
   ['android:installLocation']: {
     values: ['internalOnly'],
     severity: 'E',

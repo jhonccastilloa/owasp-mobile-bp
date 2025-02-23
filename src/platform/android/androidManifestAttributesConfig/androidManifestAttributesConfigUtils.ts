@@ -2,7 +2,6 @@ import { cleanXmlComentaries } from '@/utils/tool';
 import fs from 'fs';
 import path from 'path';
 
-
 export const androidManifestName = 'AndroidManifest.xml';
 
 export const getAndroidManifestPath = (currentPath: string) =>
@@ -14,8 +13,8 @@ export const getAndroidManifestFile = async (currentPath: string) => {
     androidManifestFilePath,
     'utf-8'
   );
-
-  return cleanXmlComentaries(androidManifest).newData;
+  const { comments, newData } = cleanXmlComentaries(androidManifest);
+  return { androidManifestWithoutComments: newData, comments };
 };
 
 export const createPermissionRegex = (mainKey: string) =>

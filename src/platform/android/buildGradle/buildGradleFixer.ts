@@ -15,15 +15,16 @@ const buildGradleFix = async (currentPath: string) => {
   Object.entries(BUILD_GRADLE_RULES).forEach(([key, data]) => {
     const regex = buildGradleRegex(key);
     const value = data.values[0];
+    const valueTransform = value.includes('.') ? `"${value}"` : value;
     if (regex.test(buildGradleNoComment)) {
       buildGradleNoComment = buildGradleNoComment.replace(
         regex,
-        `${key}=${value}`
+        `${key}=${valueTransform}`
       );
     } else {
       buildGradleNoComment = buildGradleNoComment.replace(
         /ext\s*{/,
-        `ext { \n\t\t${key}=${value}`
+        `ext { \n\t\t${key}=${valueTransform}`
       );
     }
   });

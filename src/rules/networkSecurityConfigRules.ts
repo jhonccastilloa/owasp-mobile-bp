@@ -1,6 +1,6 @@
 import { GeneralPermission } from '../types/global';
 
-export const NETWORK_SECURITY_CONFIG_DATA: Record<string, GeneralPermission> = {
+export const NETWORK_SECURITY_CONFIG_RULES: Record<string, GeneralPermission> = {
   cleartextTrafficPermitted: {
     values: ['false'],
     severity: 'E',

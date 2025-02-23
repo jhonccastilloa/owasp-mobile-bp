@@ -1,4 +1,4 @@
-import { copyPlugin } from './esbuild.plugins';
+// import { copyPlugin } from './esbuild.plugins';
 import esbuild from 'esbuild';
 
 esbuild

@@ -1,6 +1,6 @@
 import { GeneralPermission } from '../types/global';
 
-export const BUILD_GRADLE_DATA: Record<string, GeneralPermission> = {
+export const BUILD_GRADLE_RULES: Record<string, GeneralPermission> = {
   minSdkVersion: {
     values: ['27'],
     severity: 'W',

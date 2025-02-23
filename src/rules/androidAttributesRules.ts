@@ -1,16 +1,18 @@
 import { GeneralPermission } from '../types/global';
 
-export const REQUIRED_PERMISSIONS: Record<string, GeneralPermission> = {
+export const ANDROID_ATTRIBUTES_RULES: Record<string, GeneralPermission> = {
   ['android:allowBackup']: {
     values: ['false'],
     severity: 'E',
-    message: 'La aplicación no permite que sus datos se incluyan en copias de seguridad.',
+    message:
+      'La aplicación no permite que sus datos se incluyan en copias de seguridad.',
     owaspCategory: 'M9',
   },
   ['android:debuggable']: {
     values: ['false'],
     severity: 'E',
-    message: 'La instalación está restringida al almacenamiento interno, evitando riesgos de seguridad.',
+    message:
+      'La instalación está restringida al almacenamiento interno, evitando riesgos de seguridad.',
     owaspCategory: 'M7',
   },
   ['android:installLocation']: {

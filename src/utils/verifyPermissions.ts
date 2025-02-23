@@ -1,6 +1,6 @@
-import { PermissionStatus } from './types/enums';
-import { GeneralPermission, PermissionData } from './types/global';
-import { linesUpToMatch, validateSeverity } from './utils/tool';
+import { PermissionStatus } from '@/types/enums';
+import { GeneralPermission, PermissionData } from '@/types/global';
+import { linesUpToMatch, validateSeverity } from './tool';
 
 interface VerifyPermissions {
   strData: string;
@@ -30,17 +30,22 @@ const verifyPermissions = ({
       status: PermissionStatus.NOT_FOUND,
       nameFile,
     };
-    const permissions: PermissionData[] = []
+    const permissions: PermissionData[] = [];
     while ((matchData = regex.exec(strData)) !== null) {
       const numLine = linesUpToMatch(strData, matchData.index);
       permission.numLine = numLine;
-      permission.status = permissions.length >= 1 ? PermissionStatus.DUPLICATE : validateSeverity(
-        data.severity,
-        data.values.includes(matchData[groupRegexPos])
-      );
+      permission.status =
+        permissions.length >= 1
+          ? PermissionStatus.DUPLICATE
+          : validateSeverity(
+              data.severity,
+              data.values.includes(matchData[groupRegexPos])
+            );
       permissions.push({ ...permission });
     }
-    owaspValidate.push(...permissions.length > 0 ? permissions : [permission]);
+    owaspValidate.push(
+      ...(permissions.length > 0 ? permissions : [permission])
+    );
   }
   return owaspValidate;
 };

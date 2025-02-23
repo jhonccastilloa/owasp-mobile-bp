@@ -1,6 +1,6 @@
 import { Owasp, OwaspCategory } from '../types/global';
 
-export const OWASP: Record<OwaspCategory, Owasp> = {
+export const OWASP_CATEGORY: Record<OwaspCategory, Owasp> = {
   M1: {
     title: 'Uso Inadecuado de Credenciales',
     // description: 'Errores en el manejo de credenciales que podrían llevar a su exposición, como almacenamiento inseguro o transmisión no cifrada.',

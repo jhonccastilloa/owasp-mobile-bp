@@ -1,24 +1,15 @@
 import fs from 'fs';
 import path from 'path';
-import { REQUIRED_PERMISSIONS_BY_USER } from './data';
-import { PermissionData } from './types/global';
+import { PermissionData } from '@/types/global';
 import {
   cleanXmlComentaries,
   linesUpToMatch,
   validateSeverity,
-} from './utils/tool';
-import { PermissionStatus } from './types/enums';
-
-interface AMUserPermision {
-  permission: string;
-  numLine: number;
-}
-
-const getDependencies = async (packageFilePath: string): Promise<string[]> => {
-  const data = await fs.promises.readFile(packageFilePath, 'utf-8');
-  const jsonData = JSON.parse(data);
-  return Object.keys(jsonData.dependencies || {});
-};
+} from '@/utils/tool';
+import { PermissionStatus } from '@/types/enums';
+import { ANDROID_PERMISSION_RULES } from '@/rules';
+import { AMUserPermision } from './types';
+import { getPackageDependencyNames } from '@/utils/packageJson';
 
 const getManifestPermissions = async (
   androidManifestFilePath: string
@@ -39,12 +30,13 @@ const getManifestPermissions = async (
   return permissions;
 };
 
-const verifyUserPermissions = async (
+const androidManifestPermissionAnalyze = async (
   currentPath: string
 ): Promise<PermissionData[]> => {
   try {
-    const packageFilePath = path.join(currentPath, 'package.json');
-    const dependencies = new Set(await getDependencies(packageFilePath));
+    const packageDependencyNamesSet = new Set(
+      await getPackageDependencyNames(currentPath)
+    );
     const manifestPath = path.join(
       currentPath,
       'android',
@@ -59,11 +51,11 @@ const verifyUserPermissions = async (
 
     for (const manifestPermission of manifestPermissions) {
       const requiredPermission =
-        REQUIRED_PERMISSIONS_BY_USER[manifestPermission.permission];
+        ANDROID_PERMISSION_RULES[manifestPermission.permission];
       if (requiredPermission) {
         const hasRequiredDependency =
           requiredPermission.requiredDependencies.some(dep =>
-            dependencies.has(dep)
+            packageDependencyNamesSet.has(dep)
           );
         const isDuplicated = !!owaspPermission.find(
           item => item.permission === manifestPermission.permission
@@ -91,9 +83,4 @@ const verifyUserPermissions = async (
     return [];
   }
 };
-export default verifyUserPermissions;
-
-// const test = () => {
-//   verifyUserPermissions('./example')
-// }
-// test()
+export default androidManifestPermissionAnalyze;

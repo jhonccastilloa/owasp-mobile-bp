@@ -16,7 +16,6 @@ const verify = async (currentPath: string) => {
   console.log('Starting OWASP verification...');
   const androidManifestPermissionResult =
     await androidManifestPermissionAnalyze(currentPath);
-  const tabjackingAnalyzeResult = await tabjackingAnalyze(currentPath);
   const androidManifestAttributesConfigResult =
     await androidManifestAttributesConfigAnalyze(currentPath);
   const javaLogsResult = await javaLogsAnalyze(currentPath);
@@ -36,7 +35,6 @@ const verify = async (currentPath: string) => {
     ...androidManifestAttributesConfigResult,
     ...networkSecurityConfigResult,
     ...buildGradleResult,
-    tabjackingAnalyzeResult,
     vulnerableLibrariesResult,
     tabjackingResult,
     javaLogsResult,

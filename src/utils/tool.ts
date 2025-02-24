@@ -111,7 +111,7 @@ export const searchFile = async (
 
       if (stats.isDirectory()) {
         const result = await searchFile(filePath, nameFile);
-        if (result) return result;
+        if (result[0] && result[1]) return result;
       } else if (file === nameFile) {
         return [await fs.promises.readFile(filePath, 'utf8'), filePath];
       }

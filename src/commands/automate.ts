@@ -1,4 +1,5 @@
 import androidManifestAttributesConfigFix from '@/platform/android/androidManifestAttributesConfig/androidManifestAttributesConfigFixer';
+import androidSSLPinningFix from '@/platform/android/androidSSLPinning/androidSSLPinningFixer';
 import buildGradleFix from '@/platform/android/buildGradle/buildGradleFixer';
 import javaLogsFix from '@/platform/android/javaLogs/javaLogsFixer';
 import networkSecurityConfigFix from '@/platform/android/networkSecurityConfig/networkSecurityConfigFixer';
@@ -15,6 +16,7 @@ const automate = (currentPath: string) => {
   javaLogsFix(currentPath);
   console.log('✅ ProGuard ya está configurado para eliminar logs en release.');
   tabjackingFix(currentPath);
+  androidSSLPinningFix(currentPath);
   // console.log('OWASP automation completed.')
 };
 

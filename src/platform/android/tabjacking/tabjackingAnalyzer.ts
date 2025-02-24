@@ -1,10 +1,11 @@
 import { PermissionData } from '@/types/global';
 import { PermissionStatus } from '@/types/enums';
 import verifyTabjackingInMainActivity from './verifyTabjacking';
-import { getMainActivity } from './tabJackingUtils';
+import { getMainActivityJava } from '@/utils/androidFiles';
+
 
 const tabjackingAnalyze = async (currentPath: string) => {
-  const { mainActivityFile } = await getMainActivity(currentPath);
+  const { mainActivityFile } = await getMainActivityJava(currentPath);
   const { message, status } = await verifyTabjackingInMainActivity(
     mainActivityFile
   );

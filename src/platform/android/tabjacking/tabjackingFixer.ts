@@ -1,4 +1,4 @@
-import { getMainActivity } from './tabJackingUtils';
+import { getMainActivityJava } from '@/utils/androidFiles';
 import verifyTabjackingInMainActivity from './verifyTabjacking';
 import fs from 'fs';
 
@@ -7,7 +7,7 @@ const tabjackingSolution = `
         v.setFilterTouchesWhenObscured(true);
 `;
 const tabjackingFix = async (currentPath: string) => {
-  const { mainActivityFile, mainActivityPath } = await getMainActivity(
+  const { mainActivityFile, mainActivityPath } = await getMainActivityJava(
     currentPath
   );
   const { status } = await verifyTabjackingInMainActivity(mainActivityFile);

@@ -90,10 +90,10 @@ export const evaluateStatus = (percentage: number) => {
 export const searchFile = async (
   currentPath: string,
   nameFile: string
-): Promise<null | string> => {
+): Promise<[string | null, string | null]> => {
   try {
     if (!fs.existsSync(currentPath)) {
-      return null;
+      return [null, null];
     }
 
     const files = await fs.promises.readdir(currentPath);
@@ -113,12 +113,12 @@ export const searchFile = async (
         const result = await searchFile(filePath, nameFile);
         if (result) return result;
       } else if (file === nameFile) {
-        return await fs.promises.readFile(filePath, 'utf8');
+        return [await fs.promises.readFile(filePath, 'utf8'), filePath];
       }
     }
 
-    return null;
+    return [null, null];
   } catch (error) {
-    return null;
+    return [null, null];
   }
 };

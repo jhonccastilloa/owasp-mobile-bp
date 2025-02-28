@@ -19,4 +19,7 @@ export const getBuildGradleFile = async (currentPath: string) => {
 };
 
 export const buildGradleRegex = (mainKey: string) =>
+  new RegExp(`${mainKey}\\s*=\\s*(\\d+)`, 'g');
+
+export const buildGradleFixRegex = (mainKey: string) =>
   new RegExp(`${mainKey}\\s*=\\s*(?:"(\\d+\\.\\d+\\.\\d+)"|(\\d+))`, 'g');

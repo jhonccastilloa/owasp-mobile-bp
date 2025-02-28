@@ -24,13 +24,7 @@ const verifyProguardConfig = (currentPath: string, { repair = false }) => {
     if (!repair) {
       return {
         status: false,
-        message: `⚠️ Falta configuración en ${proguardFile}. Agrega:
-        
-        -assumenosideeffects class android.util.Log {
-          public static *** d(...);
-          public static *** v(...);
-          public static *** i(...);
-          }`,
+        message: `Falta configuración en el Proguard para eliminar logs en release.`,
       };
     } else {
       fs.appendFileSync(proguardFile, `\n${RULE}\n`);

@@ -5,7 +5,7 @@ import verifySSLPinning from './verifySSLPinning';
 
 const androidSSLPinningAnalyze = async (
   currentPath: string
-): Promise<PermissionData | null> => {
+): Promise<PermissionData> => {
   const { SSLPinningFile } = await getSSLPinningFile(currentPath);
   const { status } = await verifySSLPinning(SSLPinningFile);
   const data: PermissionData = {

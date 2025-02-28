@@ -2,6 +2,7 @@ import { BUILD_GRADLE_RULES } from '@/rules/buildGradleRules';
 import verifyPermissions from '@/utils/verifyPermissions';
 import { PermissionData } from '@/types/global';
 import {
+  buildGradleFixRegex,
   buildGradleName,
   buildGradleRegex,
   getBuildGradleFile,
@@ -13,7 +14,10 @@ const buildGradleAnalyze = async (
   const { buildGradleNoComment } = await getBuildGradleFile(currentPath);
   return verifyPermissions({
     strData: buildGradleNoComment,
-    regexFn: buildGradleRegex,
+    regexFn: mainKey =>
+      mainKey === 'buildToolsVersion'
+        ? buildGradleFixRegex(mainKey)
+        : buildGradleRegex(mainKey),
     permissions: BUILD_GRADLE_RULES,
     nameFile: buildGradleName,
   });

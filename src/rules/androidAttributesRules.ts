@@ -18,13 +18,15 @@ export const ANDROID_ATTRIBUTES_RULES: Record<string, GeneralPermission> = {
   ['android:installLocation']: {
     values: ['internalOnly'],
     severity: 'E',
-    message: 'La aplicación no es depurable en entornos de producción.',
+    message:
+      'Se debe usar internalOnly para proteger los datos de la aplicación y prevenir accesos desde almacenamiento externo.',
     owaspCategory: 'M9',
   },
   ['android:launchMode']: {
     values: ['singleInstance'],
     severity: 'E',
-    message: 'El manejo de actividades previene aperturas indebidas.',
+    message:
+      'Se debe usar singleInstance para evitar accesos indebidos y garantizar el aislamiento de actividades sensibles.',
     owaspCategory: 'M3',
   },
   // ['android:configChanges']: {

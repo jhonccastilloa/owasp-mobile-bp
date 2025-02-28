@@ -1,5 +1,6 @@
 import androidManifestAttributesConfigAnalyze from '@/platform/android/androidManifestAttributesConfig/androidManifestAttributesConfigAnalyzer';
 import androidManifestPermissionAnalyze from '@/platform/android/androidManifestPermission/androidManifestPermissionAnalyzer';
+import androidSSLPinningAnalyze from '@/platform/android/androidSSLPinning/androidSSLPinningAnalyzer';
 import buildGradleAnalyze from '@/platform/android/buildGradle/buildGradleAnalyzer';
 import javaLogsAnalyze from '@/platform/android/javaLogs/javaLogsAnalyzer';
 import networkSecurityConfigAnalyze from '@/platform/android/networkSecurityConfig/networkSecurityConfigAnalyzer';
@@ -28,6 +29,7 @@ const verify = async (currentPath: string) => {
     currentPath
   );
 
+  const androidSSLPinningResult = await androidSSLPinningAnalyze(currentPath);
   const tabjackingResult = await tabjackingAnalyze(currentPath);
   const appProject = getJsonAppProject(currentPath);
   const dataForPdf = transformDataForPdf([
@@ -38,6 +40,7 @@ const verify = async (currentPath: string) => {
     vulnerableLibrariesResult,
     tabjackingResult,
     javaLogsResult,
+    androidSSLPinningResult,
   ]);
 
   const pdfData: PdfData = {

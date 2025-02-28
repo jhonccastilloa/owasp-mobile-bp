@@ -146,12 +146,15 @@ export const ANDROID_PERMISSION_RULES: Record<string, UserPermission> = {
   //   message: "Aplicaciones que necesitan iniciarse al reiniciar el sistema",
   //   owaspCategory: "M1",
   // },
-  // USE_BIOMETRIC: {
-  //   requiredDependencies: ["react-native-fingerprint-scanner", "react-native-biometrics"],
-  //   severity: "E",
-  //   message: "Uso de biometría",
-  //   owaspCategory: "M8",
-  // },
+  USE_BIOMETRIC: {
+    requiredDependencies: [
+      'react-native-fingerprint-scanner',
+      'react-native-biometrics',
+    ],
+    severity: 'E',
+    message: 'Uso de biometría',
+    owaspCategory: 'M8',
+  },
 
   USE_FINGERPRINT: {
     requiredDependencies: [],

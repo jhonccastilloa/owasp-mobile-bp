@@ -16,10 +16,11 @@ const tabjackingFix = async (currentPath: string) => {
   if (!mainActivityFile || !mainActivityPath) return;
   const onCreateRegex =
     /(protected void onCreate\(Bundle savedInstanceState\) \{)/;
-  const mainActivityFix = mainActivityFile.replace(
+  let mainActivityFix = mainActivityFile.replace(
     onCreateRegex,
     `$1${tabjackingSolution}`
   );
+  mainActivityFix = 'import android.view.View;\n' + mainActivityFix;
   fs.writeFileSync(mainActivityPath, mainActivityFix, 'utf-8');
   console.log('✅ Protección contra tabjacking aplicada correctamente.');
 };

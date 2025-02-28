@@ -2,7 +2,7 @@ import fs from 'fs';
 import { BUILD_GRADLE_RULES } from '@/rules/buildGradleRules';
 import { recuperateComments } from '@/utils/tool';
 import {
-  buildGradleRegex,
+  buildGradleFixRegex,
   getBuildGradleFile,
   getBuildGradlePath,
 } from './buildGradleUtils';
@@ -13,7 +13,7 @@ const buildGradleFix = async (currentPath: string) => {
   );
 
   Object.entries(BUILD_GRADLE_RULES).forEach(([key, data]) => {
-    const regex = buildGradleRegex(key);
+    const regex = buildGradleFixRegex(key);
     const value = data.values[0];
     const valueTransform = value.includes('.') ? `"${value}"` : value;
     if (regex.test(buildGradleNoComment)) {

@@ -17,3 +17,8 @@ Once installed, you can run the following command to start the security verifica
 ```bash
 owasp-bp verify
 ```
+
+## More Information
+
+For detailed documentation and examples, please refer to the full guide here:  
+[OWASP Mobile BP Documentation](https://github.com/jhonccastilloa/owasp-mobile-bp/blob/main/DOCUMENTATION.md)

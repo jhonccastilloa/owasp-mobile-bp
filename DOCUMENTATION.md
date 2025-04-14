@@ -1,20 +1,37 @@
 # Guía de Seguridad para Aplicaciones Android
 
-### 1. Configuración de `android:allowBackup`
+### 1. Configuración de `android:allowBackup`  
 Para evitar que los datos de la aplicación se incluyan en copias de seguridad, establecer:
 
-**Salida esperada:** `android:allowBackup="true"`
-
+**Salida esperada:** `android:allowBackup="false"`  
 **Ubicación:** `AndroidManifest.xml`
+
+**Resumen:**  
+🔐 `android:allowBackup` controla si la app permite respaldar y restaurar sus datos automáticamente.  
+- ✅ `true` (valor por defecto): los datos se pueden guardar y restaurar, incluso al cambiar de dispositivo o mediante la nube.  
+- ❌ `false`: se desactiva la copia de seguridad y restauración, incluso usando `adb`.  
+📱 En Android 12+ (API 31 o superior), algunos fabricantes podrían seguir migrando datos, pero puedes evitar el respaldo en la nube configurando esta propiedad como `"false"`.
+
+**Fuente:**  
+[Documentación oficial de Android](https://developer.android.com/guide/topics/manifest/application-element?hl=es-420#reparent)
+
 
 ---
 
-### 2. Configuración de `android:installLocation`
+### 2. Configuración de `android:installLocation`  
 Para restringir la instalación al almacenamiento interno y prevenir accesos externos, establecer:
 
-**Salida esperada:** `android:installLocation="internalOnly"`
-
+**Salida esperada:** `android:installLocation="internalOnly"`  
 **Ubicación:** `AndroidManifest.xml`
+
+**Resumen:**  
+💾 `android:installLocation` determina dónde se puede instalar la app (almacenamiento interno o externo).  
+- ✅ `"internalOnly"`: fuerza la instalación únicamente en el almacenamiento interno.  
+- `"preferExternal"` o `"auto"`: permite instalación en almacenamiento externo si es posible, aunque puede verse afectado por disponibilidad o configuración del sistema.  
+⚠️ Evita instalar en almacenamiento externo si tu app usa servicios, widgets, fondos animados, alarmas o funcionalidades críticas, ya que pueden interrumpirse si el usuario desmonta la SD o activa el modo de almacenamiento masivo USB.  
+
+**Fuente:**  
+[Documentación oficial de Android](https://developer.android.com/guide/topics/data/install-location?hl=es-419)
 
 
 ---
@@ -27,71 +44,192 @@ Para evitar vulnerabilidades obsoletas, se recomienda:
 **Ubicación:** `build.gradle`
 
 ---
-
 ### 4. Configuración de `compileSdkVersion`
+
 Para maximizar la seguridad, se recomienda:
 
-**Salida esperada:** `compileSdkVersion 34`
-
+**Salida esperada:** `compileSdkVersion 34`  
 **Ubicación:** `build.gradle`
+
+**Resumen:**  
+A partir del **31 de agosto de 2024**, todas las **nuevas apps y actualizaciones** deben apuntar a Android 14 (**API level 34**) para poder publicarse en Google Play, con algunas excepciones para Wear OS y Android TV. Las apps existentes deberán apuntar al menos a **Android 13 (API level 33)** para seguir estando disponibles para nuevos usuarios con versiones recientes de Android. Las apps que apunten a API 31 o inferior dejarán de ser visibles para nuevos usuarios con versiones más recientes del sistema. Google ofrece una **extensión hasta el 1 de noviembre de 2024** si necesitas más tiempo para actualizar tu app.  
+
+Actualizar tu `compileSdkVersion` y `targetSdkVersion` a la versión requerida garantiza que tu app cumpla con las mejoras en seguridad, privacidad y rendimiento esperadas por los usuarios y por Google Play.
+
+**Fuente:**  
+[Target API level requirements for Google Play apps – Google Support](https://support.google.com/googleplay/android-developer/answer/11926878?hl=en)
 
 ---
 
 ### 5. Permisos peligrosos
-Lista de permisos peligrosos (Permisos con severity: 'E'):
 
-- `ACCESS_COARSE_LOCATION` - Acceso a la ubicación aproximada  
-- `ACCESS_FINE_LOCATION` - Acceso a la ubicación precisa  
-- `CAMERA` - Permiso para acceder a la cámara  
-- `READ_CONTACTS` - Acceso a los contactos  
-- `READ_PHONE_NUMBERS` - Acceso a los números de teléfono  
-- `READ_MEDIA_IMAGES` - Acceso a imágenes del medio  
-- `USE_BIOMETRIC` - Uso de biometría  
-- `WRITE_CONTACTS` - Escribir en los contactos  
-- `ACCESS_BACKGROUND_LOCATION` - Acceso a la ubicación en segundo plano  
+A continuación se detallan los **permisos peligrosos** (severity: 'E') detectados en la aplicación, junto con sus descripciones oficiales y enlaces a la documentación:
 
-#### Permisos deprecados  
-(Permisos que en su descripción indican que están deprecados):
 
-- `ACCESS_FINGERPRINT_MANAGER` - Deprecado desde API 28, usar `USE_BIOMETRIC`  
-- `USE_FINGERPRINT` - Deprecado desde API 28, usar `USE_BIOMETRIC`  
-- `READ_EXTERNAL_STORAGE` - Deprecado a partir de API 33, usar `READ_MEDIA_IMAGES`, `READ_MEDIA_VIDEO`, `READ_MEDIA_AUDIO`  
-- `WRITE_EXTERNAL_STORAGE` - Deprecado desde API 30  
-- `ACCESS_FINE_LOCATION_BACKGROUND` - Deprecado, usar `ACCESS_BACKGROUND_LOCATION`  
-- `CAMERA_PERMISSION` - Deprecado, usar `CAMERA`  
+#### 📍 `ACCESS_COARSE_LOCATION`
+- **Descripción:** Permite que una app acceda a la ubicación aproximada del dispositivo.
+- **Nivel de protección:** `dangerous`
+- **API mínima:** 1  
+- **Valor constante:** `"android.permission.ACCESS_COARSE_LOCATION"`  
+- 🔗 [Referencia oficial](https://developer.android.com/reference/android/Manifest.permission#ACCESS_COARSE_LOCATION)
+
+
+#### 📍 `ACCESS_FINE_LOCATION`
+- **Descripción:** Permite que una app acceda a la ubicación precisa del dispositivo.
+- **Nivel de protección:** `dangerous`
+- **API mínima:** 1  
+- **Valor constante:** `"android.permission.ACCESS_FINE_LOCATION"`  
+- 🔗 [Referencia oficial](https://developer.android.com/reference/android/Manifest.permission#ACCESS_FINE_LOCATION)
+
+
+#### 📸 `CAMERA`
+- **Descripción:** Requerido para acceder al dispositivo de cámara.  
+  En dispositivos sin cámara, es necesario adaptar el `uses-feature` del manifiesto para evitar errores de instalación.
+- **Nivel de protección:** `dangerous`
+- **API mínima:** 1  
+- **Valor constante:** `"android.permission.CAMERA"`  
+- 🔗 [Referencia oficial](https://developer.android.com/reference/android/Manifest.permission#CAMERA)
+
+
+#### 👥 `READ_CONTACTS`
+- **Descripción:** Permite leer los contactos del usuario.
+- **Nivel de protección:** `dangerous`
+- **API mínima:** 1  
+- **Valor constante:** `"android.permission.READ_CONTACTS"`  
+- 🔗 [Referencia oficial](https://developer.android.com/reference/android/Manifest.permission#READ_CONTACTS)
+
+
+#### 📞 `READ_PHONE_NUMBERS`
+- **Descripción:** Permite leer el número de teléfono del dispositivo.  
+  Expuesto también a aplicaciones instantáneas.
+- **Nivel de protección:** `dangerous`
+- **API mínima:** 26  
+- **Valor constante:** `"android.permission.READ_PHONE_NUMBERS"`  
+- 🔗 [Referencia oficial](https://developer.android.com/reference/android/Manifest.permission#READ_PHONE_NUMBERS)
+
+
+#### 🖼️ `READ_MEDIA_IMAGES`
+- **Descripción:** Permite leer archivos de imagen desde almacenamiento externo.  
+  A partir de Android 13 (`TIRAMISU`), este permiso reemplaza a `READ_EXTERNAL_STORAGE` para imágenes.
+- **Nivel de protección:** `dangerous`
+- **API mínima:** 33  
+- **Valor constante:** `"android.permission.READ_MEDIA_IMAGES"`  
+- 🔗 [Referencia oficial](https://developer.android.com/reference/android/Manifest.permission#READ_MEDIA_IMAGES)
+
+
+#### ✍️ `WRITE_CONTACTS`
+- **Descripción:** Permite escribir datos en los contactos del usuario.
+- **Nivel de protección:** `dangerous`
+- **API mínima:** 1  
+- **Valor constante:** `"android.permission.WRITE_CONTACTS"`  
+- 🔗 [Referencia oficial](https://developer.android.com/reference/android/Manifest.permission#WRITE_CONTACTS)
+
+
+#### 🧭 `ACCESS_BACKGROUND_LOCATION`
+- **Descripción:** Permite a la app acceder a la ubicación mientras se ejecuta en segundo plano.  
+  Se debe solicitar también `ACCESS_FINE_LOCATION` o `ACCESS_COARSE_LOCATION`.  
+  Este permiso es de tipo **restringido** y necesita autorización especial del instalador.
+- **Nivel de protección:** `dangerous`
+- **API mínima:** 29  
+- **Valor constante:** `"android.permission.ACCESS_BACKGROUND_LOCATION"`  
+- 🔗 [Referencia oficial](https://developer.android.com/reference/android/Manifest.permission#ACCESS_BACKGROUND_LOCATION)
+
 
 ---
 
+### 6. Permisos deprecados
+
+A continuación se listan los permisos que han sido **deprecados** oficialmente o bien **corresponden a APIs obsoletas** que ya no deben ser utilizadas:
 
 
+#### 🔐 `ACCESS_FINGERPRINT_MANAGER` *(Clase obsoleta, no es un permiso oficial)*
 
-### 6. Uso de `WRITE_EXTERNAL_STORAGE`
-Este permiso es peligroso y se debe evitar para prevenir exposición de datos.
+- **Nota:** Este identificador no corresponde a un permiso declarado en el `AndroidManifest`, sino a una **clase Java** llamada [`FingerprintManager`](https://developer.android.com/reference/android/hardware/fingerprint/FingerprintManager) utilizada para interactuar con el hardware de huellas digitales.
+- **Estado:** Deprecada en API nivel 28
+- **Alternativa recomendada:** [`BiometricPrompt`](https://developer.android.com/reference/android/hardware/biometrics/BiometricPrompt), que permite trabajar con múltiples tipos de autenticación biométrica (huella, rostro, etc.)
+- **Descripción:** La clase `FingerprintManager` fue usada para gestionar el hardware de huellas dactilares, pero ha sido reemplazada por `BiometricPrompt`, que ofrece una solución más flexible y segura a través de un cuadro de diálogo proporcionado por el sistema.
+- ⚠️ No debe considerarse como permiso válido en el manifiesto (`AndroidManifest.xml`), ya que no forma parte de `android.Manifest.permission`.
 
-**Salida esperada:** No se utiliza almacenamiento externo para evitar exposición de datos.
 
-**Ubicación:** `AndroidManifest.xml`
+#### 🔒 `USE_FINGERPRINT`
+
+- **Descripción:** Permitía a la app usar el hardware de huellas digitales del dispositivo.
+- **API mínima:** 23  
+- **Deprecado desde:** API nivel 28
+- **Nivel de protección:** `normal`
+- **Valor constante:** `"android.permission.USE_FINGERPRINT"`  
+- **Alternativa recomendada:** `USE_BIOMETRIC`
+- 🔗 [Referencia oficial](https://developer.android.com/reference/android/Manifest.permission#USE_FINGERPRINT)
+
+> **Nota:** Aunque este permiso sigue presente para compatibilidad, se recomienda migrar totalmente a `USE_BIOMETRIC` y utilizar `BiometricPrompt` como interfaz unificada para autenticación biométrica.
 
 ---
 
+#### 📂 `READ_EXTERNAL_STORAGE`
+
+- **Descripción:** Permite que una aplicación lea desde el almacenamiento externo.
+- **API mínima:** 16  
+- **Deprecado desde:** API nivel 33
+- **Nivel de protección:** `dangerous`
+- **Valor constante:** `"android.permission.READ_EXTERNAL_STORAGE"`
+- **Alternativa recomendada:** Para acceder a archivos multimedia, usar `READ_MEDIA_IMAGES`, `READ_MEDIA_VIDEO`, `READ_MEDIA_AUDIO`.
+- 🔗 [Referencia oficial](https://developer.android.com/reference/android/Manifest.permission#READ_EXTERNAL_STORAGE)
+
+> **Nota:** A partir de API 33, este permiso ya no tiene efecto. Si tu aplicación accede a archivos multimedia de otras aplicaciones, debes solicitar permisos específicos para imágenes, videos o audios.
+
+
+#### 📂 `WRITE_EXTERNAL_STORAGE`
+
+- **Descripción:** Permitía a la app escribir en el almacenamiento externo.
+- **API mínima:** 16  
+- **Deprecado desde:** API nivel 30
+- **Nivel de protección:** `dangerous`
+- **Valor constante:** `"android.permission.WRITE_EXTERNAL_STORAGE"`
+- **Alternativa recomendada:** Utilizar el permiso `MANAGE_EXTERNAL_STORAGE` si se necesita acceso completo al almacenamiento.
+- 🔗 [Referencia oficial](https://developer.android.com/training/data-storage?hl=es-419)
+
+> **Nota:** A partir de Android 11 (API 30), este permiso ya no tiene efecto para acceder al almacenamiento externo. Se recomienda usar un modelo basado en el propósito de los archivos y el nuevo permiso `MANAGE_EXTERNAL_STORAGE` para acceder fuera del directorio específico de la app.
+
+
+#### 🌍 `ACCESS_FINE_LOCATION_BACKGROUND`
+
+- **Descripción:** Permite que la app acceda a la ubicación precisa del dispositivo en segundo plano.
+- **Alternativa recomendada:** `ACCESS_BACKGROUND_LOCATION`
+- **Referencia oficial sobre políticas de ubicación en segundo plano:** [Política de acceso a la ubicación en segundo plano](https://support.google.com/googleplay/android-developer/answer/9799150?hl=en)
+
+> **Nota:** Se recomienda que las aplicaciones utilicen `ACCESS_BACKGROUND_LOCATION` para acceder a la ubicación en segundo plano. Además, se debe justificar el acceso en segundo plano solo cuando sea absolutamente necesario para la funcionalidad de la app.
+
+
+#### 📷 `CAMERA_PERMISSION`
+
+- **Descripción:** Permite que la app acceda a la cámara del dispositivo.
+- **API mínima:** 1
+- **Deprecado desde:** N/A, pero se recomienda usar el permiso más actualizado
+- **Nivel de protección:** `dangerous`
+- **Valor constante:** `"android.permission.CAMERA"`
+- **Alternativa recomendada:** Usar `CAMERA`
+- 🔗 [Referencia oficial](https://developer.android.com/reference/android/Manifest.permission#CAMERA)
+
+
+---
 
 ### 7. Configuración de `cleartextTrafficPermitted`
-Para enviar a producción, establecer:
 
-**Salida esperada:** `cleartextTrafficPermitted="false"`
+- **Salida esperada:** `cleartextTrafficPermitted="false"`
+- **Ubicación:** `res/xml/network_security_config.xml`
+- **Resumen:** Inhabilita el tráfico de texto sin cifrar (HTTP) para dominios específicos o para toda la app, lo que obliga a utilizar solo conexiones seguras (HTTPS). Esto ayuda a prevenir filtraciones de datos sensibles y protege contra ataques en redes inseguras. Aunque a partir de Android 9 (API 28) esta opción ya está deshabilitada por defecto, sigue siendo buena práctica configurarla explícitamente, especialmente en apps que deben cumplir con altos estándares de seguridad.
+- **Fuente:** [Configuración de seguridad de red - Android Developers](https://developer.android.com/privacy-and-security/security-config?hl=es-419#CleartextTrafficPermitted)
 
-**Ubicación:** `network_security_config.xml`
 
 ---
 
 ### 8. Configuración de `android:launchMode`
-Para evitar accesos indebidos y garantizar el aislamiento de actividades sensibles, establecer:
 
-**Salida esperada:** `android:launchMode="singleInstance"`
+- **Salida esperada:** `android:launchMode="singleInstance"`
+- **Ubicación:** `AndroidManifest.xml`
+- **Resumen:** Define cómo se inicia una actividad en Android. El modo `singleInstance` asegura que solo exista una única instancia de la actividad en todo el sistema, y que no pueda compartir su tarea con otras actividades. Esto es útil para aislar actividades críticas o sensibles, evitando que se mezclen con otras en la pila de navegación. Aunque existen otros modos (`standard`, `singleTop`, `singleTask`, `singleInstancePerTask`), `singleInstance` garantiza mayor seguridad y control, especialmente cuando se necesita evitar accesos no deseados o estados compartidos.
+- **Fuente:** [Elemento `<activity>`: android:launchMode - Android Developers](https://developer.android.com/guide/topics/manifest/activity-element?hl=es-419#lmode)
 
-**Ubicación:** `AndroidManifest.xml`
-
-*(No se incluirá la configuración de `android:configChanges`.)*
 
 ---
 

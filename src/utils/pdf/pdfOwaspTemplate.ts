@@ -79,12 +79,15 @@ const pdfOwaspTemplate = (json: PdfData): TDocumentDefinitions => {
                 {
                   text: [
                     {
-                      text: ` ${permission.permission}`,
+                      text: ` ${permission.permission} - `,
                       color: 'black',
                       bold: true,
                     },
                     {
-                      text: ` - ${permission.message || 'Sin descripción.'}`,
+                      text:
+                        typeof permission.message === 'string'
+                          ? `${permission.message || 'Sin descripción.'}`
+                          : permission.message,
                       color: 'black',
                     },
                   ],

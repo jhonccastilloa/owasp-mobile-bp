@@ -7,15 +7,13 @@ const androidSSLPinningAnalyze = async (
   currentPath: string
 ): Promise<PermissionData> => {
   const { SSLPinningFile } = await getSSLPinningFile(currentPath);
-  const { status } = await verifySSLPinning(SSLPinningFile);
+  const { status, message } = await verifySSLPinning(SSLPinningFile);
   const data: PermissionData = {
     numLine: null,
-    status: status ? PermissionStatus.OK : PermissionStatus.NOT_FOUND,
+    status,
     permission: 'SSL Pinning',
     severity: 'E',
-    message: `${
-      status ? 'Se' : 'No se'
-    } ha encontrado la prevención contra SSL Pinning en el archivo SSLPinningFactory.java`,
+    message,
     owaspCategory: 'M4',
     nameFile: 'SSLPinningFactory.java',
   };

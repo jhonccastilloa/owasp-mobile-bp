@@ -1,9 +1,10 @@
+import { ContentText } from 'pdfmake/interfaces';
 import { PermissionStatus } from './enums';
 
 export type OwaspSeverity = 'E' | 'W';
 export interface Permission {
   severity: OwaspSeverity;
-  message: string;
+  message: ContentText[] | string;
   owaspCategory: OwaspCategory;
 }
 
@@ -25,7 +26,7 @@ export interface PermissionData extends Permission {
   status: PermissionStatus;
   permission: string;
   extraData?: Report[];
-  libraryReports? : DependencyReport[];
+  libraryReports?: DependencyReport[];
   nameFile?: string;
 }
 
@@ -78,14 +79,12 @@ interface DependencyReport {
 }
 
 export interface LibraryVulnerability {
-  package: string; 
-  minVersion: number | string; 
+  package: string;
+  minVersion: number | string;
   maxVersion: string;
-  vulnId: string; 
-  description: string; 
-  url: string; 
-  severity: string; 
-  owaspCategory: OwaspCategory; 
+  vulnId: string;
+  description: string;
+  url: string;
+  severity: string;
+  owaspCategory: OwaspCategory;
 }
-
-

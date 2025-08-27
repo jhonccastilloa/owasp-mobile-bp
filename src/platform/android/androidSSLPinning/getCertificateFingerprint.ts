@@ -1,9 +1,9 @@
-import tls from 'tls';
+import tls, { PeerCertificate } from 'tls';
 import crypto from 'crypto';
 
 const getCertificateFingerprint = (
   options: tls.ConnectionOptions
-): Promise<string | null> => {
+): Promise<{ fingerprint: string | null; certificate: PeerCertificate }> => {
   return new Promise((resolve, reject) => {
     const socket = tls.connect(options, () => {
       const certificate: tls.PeerCertificate = socket.getPeerCertificate(true);
@@ -15,7 +15,7 @@ const getCertificateFingerprint = (
 
       const fingerprint = getPublicKeyFingerprint(certificate);
       socket.end();
-      resolve(fingerprint);
+      resolve({ fingerprint, certificate });
     });
 
     socket.on('error', err => {

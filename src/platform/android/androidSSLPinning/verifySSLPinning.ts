@@ -1,17 +1,20 @@
 import { cleanBlockAndLineComment } from '@/utils/tool';
 import tls from 'tls';
 import getCertificateFingerprint from './getCertificateFingerprint';
+import { PermissionStatus } from '@/types/enums';
+import { formatDate } from '@/utils/date';
+import { ContentText } from 'pdfmake/interfaces';
 
 const regexHostname = /hostname\s*=\s*"(.+)"\s*;/;
 const regexFingerprint = /"sha256\/(.+)"\)/;
 
 const verifySSLPinning = async (SSLPinningFile: string | null) => {
-  let status = false;
-  let message = '';
+  let status = PermissionStatus.NOT_FOUND;
+  let message: ContentText[] | string = '';
 
   if (!SSLPinningFile) {
     message =
-      'Error: Archivo de configuración de SSL Pinning no proporcionado.';
+      'No se ha encontrado la prevención contra SSL Pinning en el archivo SSLPinningFactory.java';
     return { status, message };
   }
 
@@ -23,13 +26,13 @@ const verifySSLPinning = async (SSLPinningFile: string | null) => {
 
   if (!matchHostname) {
     message =
-      'Advertencia: No se encontró un hostname válido en el archivo de configuración.';
+      'No se encontró un hostname válido en el archivo de configuración.';
     return { status, message };
   }
 
   if (!matchFingerprint) {
     message =
-      'Advertencia: No se encontró un fingerprint válido en el archivo de configuración.';
+      'No se encontró un fingerprint válido en el archivo de configuración.';
     return { status, message };
   }
 
@@ -40,15 +43,39 @@ const verifySSLPinning = async (SSLPinningFile: string | null) => {
     rejectUnauthorized: false,
   };
 
-  const serverFingerprint = await getCertificateFingerprint(options);
+  const { fingerprint: serverFingerprint, certificate } =
+    await getCertificateFingerprint(options);
 
   if (serverFingerprint !== matchFingerprint[1]) {
     message = 'Error: El fingerprint del servidor no coincide con el esperado.';
     return { status, message };
   }
 
-  status = true;
-  message = 'SSL Pinning verificado correctamente.';
+  // Verificar la fecha de expiración
+  const expirationDate = new Date(certificate.valid_to);
+  const now = new Date();
+  const diffTime = expirationDate.getTime() - now.getTime();
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+  if (diffDays < 30) {
+    message = 'El certificado del servidor expirará en menos de 30 días.';
+    return { status: PermissionStatus.WARNING, message };
+  }
+  if (diffDays < 0) {
+    message = 'El certificado del servidor ya expiró.';
+    return { status, message };
+  }
+
+  status = PermissionStatus.OK;
+  message = [
+    {
+      text: 'Se ha encontrado la prevención contra SSL Pinning en el archivo SSLPinningFactory.java',
+    },
+    { text: '.\nCertificado expira el: ', bold: true },
+    { text: formatDate(expirationDate) },
+    { text: '.\nFaltan: ', bold: true },
+    { text: `${diffDays} días.` },
+  ];
 
   return { status, message };
 };

@@ -1,6 +1,70 @@
 import tls, { PeerCertificate } from 'tls';
 import crypto from 'crypto';
+export type Fingerprints = {
+  subject: any;
+  issuer: any;
+  spki: string;
+  cert: string;
+  validTo: string;
+};
 
+export async function getFingerprints(
+  host: string,
+  port = 443
+): Promise<Fingerprints[]> {
+  return new Promise((resolve, reject) => {
+    const socket = tls.connect(
+      { host, port, servername: host, rejectUnauthorized: true },
+      () => {
+        try {
+          const results: Fingerprints[] = [];
+          const seen = new Set<string>();
+
+          let cert: any= socket.getPeerCertificate(true);
+          while (cert && cert.raw) {
+            const x509 = new crypto.X509Certificate(cert.raw);
+            const spkiDer = x509.publicKey.export({
+              format: 'der',
+              type: 'spki',
+            });
+            const spkiB64 = crypto
+              .createHash('sha256')
+              .update(spkiDer)
+              .digest('base64');
+            const certB64 = crypto
+              .createHash('sha256')
+              .update(cert.raw)
+              .digest('base64');
+
+            const id = spkiB64 + '|' + certB64;
+            if (seen.has(id)) break;
+            seen.add(id);
+        
+            results.push({
+              subject: cert.subject,
+              issuer: cert.issuer,
+              spki: `sha256/${spkiB64}`,
+              cert: `sha256/${certB64}`,
+              validTo:cert.valid_to
+            });
+
+            if (!cert.issuerCertificate || cert.issuerCertificate === cert)
+              break;
+            cert = cert.issuerCertificate;
+          }
+
+          socket.end();
+          resolve(results.slice(0, 2));
+        } catch (err) {
+          socket.end();
+          reject(err);
+        }
+      }
+    );
+
+    socket.on('error', err => reject(err));
+  });
+}
 const getCertificateFingerprint = (
   options: tls.ConnectionOptions
 ): Promise<{ fingerprint: string | null; certificate: PeerCertificate }> => {

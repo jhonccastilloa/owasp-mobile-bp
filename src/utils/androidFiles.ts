@@ -13,11 +13,27 @@ export const getMainActivityJava = async (currentPath: string) => {
 
   return { mainActivityFile, mainActivityPath };
 };
-export const getMainApplicationJava = async (currentPath: string) => {
+export const getMainApplication = async (
+  currentPath: string
+): Promise<{
+  mainApplicationFile: string | null;
+  mainApplicationPath: string | null;
+  mainAplicationName: string | null;
+}> => {
+  const mainAplicationNames = ['MainApplication.java', 'MainApplication.kt'];
   const javaComPath = getJavaComPath(currentPath);
-  const [mainApplicationFile, mainApplicationPath] = await searchFile(
-    javaComPath,
-    'MainApplication.java'
-  );
-  return { mainApplicationFile, mainApplicationPath };
+  for (let mainAplicationName of mainAplicationNames) {
+    const [mainApplicationFile, mainApplicationPath] = await searchFile(
+      javaComPath,
+      mainAplicationName
+    );
+    if (mainApplicationFile)
+      return { mainApplicationFile, mainApplicationPath, mainAplicationName };
+  }
+
+  return {
+    mainApplicationFile: null,
+    mainApplicationPath: null,
+    mainAplicationName: null,
+  };
 };

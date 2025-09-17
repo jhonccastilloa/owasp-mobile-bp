@@ -16,6 +16,7 @@ const getOwaspBpConfig = async () => {
     const owaspBpConfigJson: OwaspBpConfig = JSON.parse(owaspBpConfigFile);
     return owaspBpConfigJson;
   } catch (error) {
+    console.log("🚫 Arhivo 'owasp-bp.config.json' no encontrado.");
     return null;
   }
 };

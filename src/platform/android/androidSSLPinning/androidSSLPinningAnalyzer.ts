@@ -5,9 +5,9 @@ import verifySSLPinning from './verifySSLPinning';
 
 const androidSSLPinningAnalyze = async (
   currentPath: string
-): Promise<PermissionData> => {
-  const { SSLPinningFile } = await getSSLPinningFile(currentPath);
-  const { status, message } = await verifySSLPinning(SSLPinningFile);
+): Promise<PermissionData | null> => {
+  const { SSLPinningFile, fileName } = await getSSLPinningFile(currentPath);
+  const { status, message } = await verifySSLPinning(SSLPinningFile, fileName);
   const data: PermissionData = {
     numLine: null,
     status,
@@ -15,7 +15,7 @@ const androidSSLPinningAnalyze = async (
     severity: 'E',
     message,
     owaspCategory: 'M4',
-    nameFile: 'SSLPinningFactory.java',
+    nameFile: fileName ?? '',
   };
   return data;
 };

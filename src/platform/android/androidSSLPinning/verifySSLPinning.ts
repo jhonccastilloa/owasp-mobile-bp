@@ -1,14 +1,19 @@
 import { cleanBlockAndLineComment } from '@/utils/tool';
 import tls from 'tls';
-import getCertificateFingerprint from './getCertificateFingerprint';
+import getCertificateFingerprint, {
+  getFingerprints,
+} from './getCertificateFingerprint';
 import { PermissionStatus } from '@/types/enums';
 import { formatDate } from '@/utils/date';
 import { ContentText } from 'pdfmake/interfaces';
 
-const regexHostname = /hostname\s*=\s*"(.+)"\s*;/;
-const regexFingerprint = /"sha256\/(.+)"\)/;
+const regexHostname = /hostname\s*=\s*"(.+)"\s*/;
+const regexFingerprint = /sha256\/[A-Za-z0-9+/=]+/g;
 
-const verifySSLPinning = async (SSLPinningFile: string | null) => {
+const verifySSLPinning = async (
+  SSLPinningFile: string | null,
+  fileName: string | null
+) => {
   let status = PermissionStatus.NOT_FOUND;
   let message: ContentText[] | string = '';
 
@@ -20,64 +25,83 @@ const verifySSLPinning = async (SSLPinningFile: string | null) => {
 
   const SSLPinningFileWithoutComments =
     cleanBlockAndLineComment(SSLPinningFile).newData;
-  const matchHostname = SSLPinningFileWithoutComments.match(regexHostname);
-  const matchFingerprint =
-    SSLPinningFileWithoutComments.match(regexFingerprint);
 
+  const matchHostname = SSLPinningFileWithoutComments.match(regexHostname);
   if (!matchHostname) {
     message =
       'No se encontró un hostname válido en el archivo de configuración.';
     return { status, message };
   }
 
+  const matchFingerprint =
+    SSLPinningFileWithoutComments.match(regexFingerprint);
   if (!matchFingerprint) {
     message =
       'No se encontró un fingerprint válido en el archivo de configuración.';
     return { status, message };
   }
 
-  const options: tls.ConnectionOptions = {
-    host: matchHostname[1],
-    port: 443,
-    servername: matchHostname[1],
-    rejectUnauthorized: false,
-  };
+  // Trae todos los fingerprints del servidor
+  const fingerprints = await getFingerprints(matchHostname[1]);
 
-  const { fingerprint: serverFingerprint, certificate } =
-    await getCertificateFingerprint(options);
-
-  if (serverFingerprint !== matchFingerprint[1]) {
-    message = 'Error: El fingerprint del servidor no coincide con el esperado.';
-    return { status, message };
-  }
-
-  // Verificar la fecha de expiración
-  const expirationDate = new Date(certificate.valid_to);
-  const now = new Date();
-  const diffTime = expirationDate.getTime() - now.getTime();
-  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-  if (diffDays < 30) {
-    message = 'El certificado del servidor expirará en menos de 30 días.';
-    return { status: PermissionStatus.WARNING, message };
-  }
-  if (diffDays < 0) {
-    message = 'El certificado del servidor ya expiró.';
-    return { status, message };
-  }
-
-  status = PermissionStatus.OK;
-  message = [
+  const messages: ContentText[] = [
     {
-      text: 'Se ha encontrado la prevención contra SSL Pinning en el archivo SSLPinningFactory.java',
+      text: `Se ha encontrado la prevención contra SSL Pinning en el archivo ${fileName}\n`,
     },
-    { text: '.\nCertificado expira el: ', bold: true },
-    { text: formatDate(expirationDate) },
-    { text: '.\nFaltan: ', bold: true },
-    { text: `${diffDays} días.` },
   ];
 
-  return { status, message };
+  let hasValid = false;
+  let allExpiredOrInvalid = true;
+
+  messages.push({ text: '\nSe encontraros los siguientes fingerprints: \n' });
+  for (const declaredFp of matchFingerprint) {
+    const serverFp = fingerprints.find(fp => fp.spki === declaredFp);
+
+    if (!serverFp) {
+      messages.push(
+        { text: `\nFingerprint Invalido: ` },
+        { text: declaredFp, bold: true }
+      );
+      continue;
+    }
+
+    const expirationDate = new Date(serverFp.validTo);
+    const now = new Date();
+    const diffTime = expirationDate.getTime() - now.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+    messages.push(
+      { text: `\n\nFingerprint válido: ` },
+      { text: declaredFp, bold: true },
+      { text: '\n   Expira el: ', bold: true },
+      { text: formatDate(expirationDate) },
+      { text: '.\n   Faltan: ', bold: true },
+      { text: `${diffDays} días.` }
+    );
+
+    if (diffDays < 0) {
+      messages.push({
+        text: '\n   Error: El certificado ya expiró.',
+      });
+      // no lo marcamos como válido
+    } else {
+      hasValid = true; // al menos uno sigue siendo válido
+      allExpiredOrInvalid = false;
+      if (diffDays < 30) {
+        messages.push({
+          text: '\n   Advertencia: El certificado expira en menos de 30 días.',
+        });
+      }
+    }
+  }
+
+  if (hasValid) {
+    status = PermissionStatus.OK;
+  } else if (allExpiredOrInvalid) {
+    status = PermissionStatus.NOT_FOUND;
+  }
+
+  return { status, message: messages };
 };
 
 export default verifySSLPinning;

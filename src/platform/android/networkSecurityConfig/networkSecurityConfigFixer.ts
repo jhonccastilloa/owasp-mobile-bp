@@ -23,7 +23,7 @@ const networkSecurityConfigFix = async (currentPath: string) => {
   });
 
   fs.writeFileSync(
-    getNetworkSecurityConfigPath(currentPath),
+    (await getNetworkSecurityConfigPath(currentPath))[1]!,
     recuperateComments(networkSecurityConfigNoComment, comments),
     'utf8'
   );

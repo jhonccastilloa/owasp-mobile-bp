@@ -97,7 +97,7 @@ class SSLPinningFactory : OkHttpClientFactory {
     companion object {
         private const val hostname = "${hostname}"
         private val sha256Keys = listOf(${fingerPrints
-          ?.map(f => `"sha256/${f.spki}"`)
+          ?.map(f => `"${f.spki}"`)
           .join(',')})
     }
     override fun createNewNetworkModuleClient(): OkHttpClient {

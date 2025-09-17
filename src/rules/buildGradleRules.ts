@@ -9,21 +9,21 @@ export const BUILD_GRADLE_RULES: Record<string, GeneralPermission> = {
     owaspCategory: 'M2',
   },
   compileSdkVersion: {
-    values: ['34'],
+    values: ['35'],
     severity: 'W',
     message:
       'La app se compila con la última versión del SDK en compileSdkVersion, maximizando la seguridad.',
     owaspCategory: 'M8',
   },
   targetSdkVersion: {
-    values: ['34'],
+    values: ['35'],
     severity: 'W',
     message:
       'La app se compila con la última versión del SDK en targetSdkVersion, maximizando la seguridad.',
     owaspCategory: 'M8',
   },
   buildToolsVersion: {
-    values: ['34.0.0'],
+    values: ['35.0.0'],
     severity: 'W',
     message:
       'La app se compila con la última versión del SDK en buildToolsVersion, maximizando la seguridad.',

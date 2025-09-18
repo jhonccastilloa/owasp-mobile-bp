@@ -1,8 +1,5 @@
 import { cleanBlockAndLineComment } from '@/utils/tool';
-import tls from 'tls';
-import getCertificateFingerprint, {
-  getFingerprints,
-} from './getCertificateFingerprint';
+import { getFingerprints } from './getCertificateFingerprint';
 import { PermissionStatus } from '@/types/enums';
 import { formatDate } from '@/utils/date';
 import { ContentText } from 'pdfmake/interfaces';

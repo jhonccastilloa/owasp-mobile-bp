@@ -14,24 +14,64 @@ import { generatePDF } from '@/utils/pdf/pdfGenerator';
 import transformDataForPdf from '@/utils/pdf/transformDataForPdf';
 
 const verify = async (currentPath: string) => {
+  const startTime = Date.now();
   console.log('Starting OWASP verification...');
-  const androidManifestPermissionResult =
-    await androidManifestPermissionAnalyze(currentPath);
-  const androidManifestAttributesConfigResult =
-    await androidManifestAttributesConfigAnalyze(currentPath);
-  const javaLogsResult = await javaLogsAnalyze(currentPath);
-  const buildGradleResult = await buildGradleAnalyze(currentPath);
-  const networkSecurityConfigResult = await networkSecurityConfigAnalyze(
-    currentPath
-  );
 
-  const vulnerableLibrariesResult = await vulnerableLibrariesAnalyze(
-    currentPath
-  );
+  // Ejecutamos todos los análisis en paralelo
+  const [
+    androidManifestPermissionResult,
+    androidManifestAttributesConfigResult,
+    javaLogsResult,
+    buildGradleResult,
+    networkSecurityConfigResult,
+    vulnerableLibrariesResult,
+    androidSSLPinningResult,
+    tabjackingResult,
+  ] = await Promise.all([
+    (async () => {
+      const res = await androidManifestPermissionAnalyze(currentPath);
+      console.log('✅ AndroidManifest Permission analizado.');
+      return res;
+    })(),
+    (async () => {
+      const res = await androidManifestAttributesConfigAnalyze(currentPath);
+      console.log('✅ AndroidManifest Attributes Config analizado.');
+      return res;
+    })(),
+    (async () => {
+      const res = await javaLogsAnalyze(currentPath);
+      console.log('✅ Java Logs analizados.');
+      return res;
+    })(),
+    (async () => {
+      const res = await buildGradleAnalyze(currentPath);
+      console.log('✅ Build Gradle analizado.');
+      return res;
+    })(),
+    (async () => {
+      const res = await networkSecurityConfigAnalyze(currentPath);
+      console.log('✅ Network Security Config analizado.');
+      return res;
+    })(),
+    (async () => {
+      const res = await vulnerableLibrariesAnalyze(currentPath);
+      console.log('✅ Librerías vulnerables analizadas.');
+      return res;
+    })(),
+    (async () => {
+      const res = await androidSSLPinningAnalyze(currentPath);
+      console.log('✅ SSL Pinning analizado.');
+      return res;
+    })(),
+    (async () => {
+      const res = await tabjackingAnalyze(currentPath);
+      console.log('✅ Tabjacking analizado.');
+      return res;
+    })(),
+  ]);
 
-  const androidSSLPinningResult = await androidSSLPinningAnalyze(currentPath);
-  const tabjackingResult = await tabjackingAnalyze(currentPath);
   const appProject = getJsonAppProject(currentPath);
+
   const dataForPdf = transformDataForPdf([
     ...androidManifestPermissionResult,
     ...androidManifestAttributesConfigResult,
@@ -49,8 +89,13 @@ const verify = async (currentPath: string) => {
     date: formatDate(today),
     ...dataForPdf,
   };
+
   generatePDF(pdfData, currentPath);
-  console.log('OWASP verification completed.');
+
+  const endTime = Date.now();
+  const durationSeconds = ((endTime - startTime) / 1000).toFixed(2);
+
+  console.log(`OWASP verification completed in ${durationSeconds} seconds.`);
 };
 
 export default verify;

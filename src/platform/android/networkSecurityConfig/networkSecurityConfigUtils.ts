@@ -1,5 +1,4 @@
 import path from 'path';
-import fs from 'fs';
 import { cleanXmlComentaries, searchFile } from '@/utils/tool';
 
 export const networkSecurityName = 'network_security_config.xml';

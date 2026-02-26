@@ -143,7 +143,7 @@ const pdfOwaspTemplate = (json: PdfData): TDocumentDefinitions => {
                 stack: [
                   { text: 'Application Name:', style: 'subtitle' },
                   { text: json.appName },
-                  { text: 'Status:', style: 'subtitle', margin: [0, 10, 0, 0] },
+                  { text: 'Score:', style: 'subtitle', margin: [0, 10, 0, 0] },
                   { text: json.percentageLabel },
                 ],
               },

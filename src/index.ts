@@ -1,36 +1,47 @@
-import { automate, verify } from './commands';
-const { exec } = require('child_process');
+import { Command } from 'commander';
+import { verify } from './commands/verify.js';
+import { automate } from './commands/automate.js';
+import { openUrl } from './utils/openUrl.js';
+import { logger } from './utils/logger.js';
 
-const main = async () => {
-  const args = process.argv.slice(2);
-  const currentPath = process.cwd();
-  switch (args[0]) {
-    case 'verify':
-      verify(currentPath);
-      break;
-    case 'automate':
-      automate(currentPath);
-      break;
+const DOCUMENTATION_URL =
+  'https://github.com/jhonccastilloa/owasp-mobile-bp/blob/main/DOCUMENTATION.md';
 
-      case 'documentation':
-        exec('start https://github.com/jhonccastilloa/owasp-mobile-bp/blob/main/DOCUMENTATION.md', (err:any, stdout:any, stderr:any) => {
-          if (err) {
-            console.error(`Error: ${err}`);
-            return;
-          }
-          if (stderr) {
-            console.error(`stderr: ${stderr}`);
-            return;
-          }
-          console.log(`stdout: ${stdout}`);
-        });
-        break;
-    default:
-      console.log(
-        "Comando no reconocido. Usa 'owasp -verify' para verificar el proyecto."
-      );
-      break;
-  }
-};
+const program = new Command();
 
-main();
+program
+  .name('owasp-bp')
+  .description('OWASP Mobile Security Verification CLI Tool')
+  .version('1.0.6')
+  .option('-v, --verbose', 'Enable verbose output', false);
+
+program
+  .command('verify')
+  .description('Analyze project for security issues')
+  .option('-p, --path <path>', 'Project path', process.cwd())
+  .action(async (options, command) => {
+    const globalOptions = command.parent.opts();
+    logger.setVerbose(globalOptions.verbose);
+    await verify(options.path);
+  });
+
+program
+  .command('automate')
+  .description('Automatically fix detected issues')
+  .option('-p, --path <path>', 'Project path', process.cwd())
+  .action(async (options, command) => {
+    const globalOptions = command.parent.opts();
+    logger.setVerbose(globalOptions.verbose);
+    await automate(options.path);
+  });
+
+program
+  .command('documentation')
+  .description('Open documentation in browser')
+  .action(async () => {
+    logger.info('Opening documentation...');
+    await openUrl(DOCUMENTATION_URL);
+    logger.success('Documentation opened in browser');
+  });
+
+program.parseAsync(process.argv);

@@ -72,7 +72,7 @@ const androidManifestPermissionAnalyze = async (
                 requiredPermission.severity,
                 hasRequiredDependency
               ),
-          nameFile: 'AndroidManifext.xml',
+          nameFile: 'AndroidManifest.xml',
         };
         owaspPermission.push(data);
       }

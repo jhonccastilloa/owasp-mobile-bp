@@ -12,12 +12,13 @@ import { currentGitBranch } from '@/utils/git';
 import { getJsonAppProject } from '@/utils/jsonAppProject';
 import { generatePDF } from '@/utils/pdf/pdfGenerator';
 import transformDataForPdf from '@/utils/pdf/transformDataForPdf';
+import { logger } from '@/utils/logger';
 
-const verify = async (currentPath: string) => {
+export const verify = async (currentPath: string) => {
   const startTime = Date.now();
-  console.log('Starting OWASP verification...');
+  logger.section('OWASP Security Verification');
+  logger.info(`Analyzing project: ${currentPath}`);
 
-  // Ejecutamos todos los análisis en paralelo
   const [
     androidManifestPermissionResult,
     androidManifestAttributesConfigResult,
@@ -30,42 +31,42 @@ const verify = async (currentPath: string) => {
   ] = await Promise.all([
     (async () => {
       const res = await androidManifestPermissionAnalyze(currentPath);
-      console.log('✅ AndroidManifest Permission analizado.');
+      logger.success('AndroidManifest Permissions analyzed');
       return res;
     })(),
     (async () => {
       const res = await androidManifestAttributesConfigAnalyze(currentPath);
-      console.log('✅ AndroidManifest Attributes Config analizado.');
+      logger.success('AndroidManifest Attributes analyzed');
       return res;
     })(),
     (async () => {
       const res = await javaLogsAnalyze(currentPath);
-      console.log('✅ Java Logs analizados.');
+      logger.success('Java Logs analyzed');
       return res;
     })(),
     (async () => {
       const res = await buildGradleAnalyze(currentPath);
-      console.log('✅ Build Gradle analizado.');
+      logger.success('Build Gradle analyzed');
       return res;
     })(),
     (async () => {
       const res = await networkSecurityConfigAnalyze(currentPath);
-      console.log('✅ Network Security Config analizado.');
+      logger.success('Network Security Config analyzed');
       return res;
     })(),
     (async () => {
       const res = await vulnerableLibrariesAnalyze(currentPath);
-      console.log('✅ Librerías vulnerables analizadas.');
+      logger.success('Vulnerable Libraries analyzed');
       return res;
     })(),
     (async () => {
       const res = await androidSSLPinningAnalyze(currentPath);
-      console.log('✅ SSL Pinning analizado.');
+      logger.success('SSL Pinning analyzed');
       return res;
     })(),
     (async () => {
       const res = await tabjackingAnalyze(currentPath);
-      console.log('✅ Tabjacking analizado.');
+      logger.success('Tabjacking analyzed');
       return res;
     })(),
   ]);
@@ -73,14 +74,14 @@ const verify = async (currentPath: string) => {
   const appProject = getJsonAppProject(currentPath);
 
   const dataForPdf = transformDataForPdf([
-    ...androidManifestPermissionResult,
-    ...androidManifestAttributesConfigResult,
-    ...networkSecurityConfigResult,
-    ...buildGradleResult,
-    vulnerableLibrariesResult,
-    tabjackingResult,
-    javaLogsResult,
-    androidSSLPinningResult,
+    ...(Array.isArray(androidManifestPermissionResult) ? androidManifestPermissionResult : []),
+    ...(Array.isArray(androidManifestAttributesConfigResult) ? androidManifestAttributesConfigResult : []),
+    ...(Array.isArray(networkSecurityConfigResult) ? networkSecurityConfigResult : []),
+    ...(Array.isArray(buildGradleResult) ? buildGradleResult : []),
+    ...(vulnerableLibrariesResult ? [vulnerableLibrariesResult] : []),
+    ...(tabjackingResult ? [tabjackingResult] : []),
+    ...(javaLogsResult ? [javaLogsResult] : []),
+    ...(androidSSLPinningResult ? [androidSSLPinningResult] : []),
   ]);
 
   const pdfData: PdfData = {
@@ -95,7 +96,6 @@ const verify = async (currentPath: string) => {
   const endTime = Date.now();
   const durationSeconds = ((endTime - startTime) / 1000).toFixed(2);
 
-  console.log(`OWASP verification completed in ${durationSeconds} seconds.`);
+  logger.success(`Verification completed in ${durationSeconds} seconds`);
+  logger.info(`Report generated: ${currentPath}/owasp-report.pdf`);
 };
-
-export default verify;

@@ -89,8 +89,14 @@ export const evaluateStatus = (percentage: number) => {
 
 export const searchFile = async (
   currentPath: string,
-  nameFile: string
+  nameFile: string,
+  maxDepth: number = 10,
+  currentDepth: number = 0
 ): Promise<[string | null, string | null]> => {
+  if (currentDepth >= maxDepth) {
+    return [null, null];
+  }
+
   try {
     if (!fs.existsSync(currentPath)) {
       return [null, null];
@@ -104,13 +110,12 @@ export const searchFile = async (
       let stats;
       try {
         stats = await fs.promises.lstat(filePath);
-      } catch (err) {
-        console.error(`⚠️ No se pudo leer: ${filePath}`);
+      } catch {
         continue;
       }
 
       if (stats.isDirectory()) {
-        const result = await searchFile(filePath, nameFile);
+        const result = await searchFile(filePath, nameFile, maxDepth, currentDepth + 1);
         if (result[0] && result[1]) return result;
       } else if (file === nameFile) {
         return [await fs.promises.readFile(filePath, 'utf8'), filePath];
@@ -118,7 +123,7 @@ export const searchFile = async (
     }
 
     return [null, null];
-  } catch (error) {
+  } catch {
     return [null, null];
   }
 };

@@ -22,3 +22,14 @@ owasp-bp verify
 
 For detailed documentation and examples, please refer to the full guide here:  
 [OWASP Mobile BP Documentation](https://github.com/jhonccastilloa/owasp-mobile-bp/blob/main/DOCUMENTATION.md)
+
+## Optional Config (`owasp-bp.config.json`)
+
+For iOS projects with multiple plist files, you can force which `Info.plist` must be analyzed/fixed:
+
+```json
+{
+  "hostname": "api.example.com",
+  "iosInfoPlistPath": "ios/MyApp/Info-Production.plist"
+}
+```

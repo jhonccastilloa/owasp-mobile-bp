@@ -15,6 +15,11 @@ esbuild.build({
     'commander',
     'open',
     'ora',
+    'pdfmake',
+    'pdfmake/build/pdfmake',
+    'pdfmake/build/vfs_fonts',
+    'pdfmake/build/pdfmake.js',
+    'pdfmake/build/vfs_fonts.js',
   ],
   format: 'cjs',
 }).catch(() => process.exit(1));

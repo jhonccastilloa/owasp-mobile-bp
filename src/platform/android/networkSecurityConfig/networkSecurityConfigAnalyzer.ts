@@ -6,15 +6,18 @@ import {
   networkSecurityName,
   readNetworkSecurityConfig,
 } from './networkSecurityConfigUtils';
+import { AndroidVariantContext } from '@/platform/android/context/androidVariantContext';
 
 const networkSecurityConfigAnalyze = async (
-  currentPath: string
+  currentPath: string,
+  context?: AndroidVariantContext
 ): Promise<PermissionData[]> => {
-  const { networkSecurityConfigData } = await readNetworkSecurityConfig(
-    currentPath
+  const { networkSecurityConfigNoComment } = await readNetworkSecurityConfig(
+    currentPath,
+    context
   );
   return verifyPermissions({
-    strData: networkSecurityConfigData,
+    strData: networkSecurityConfigNoComment,
     regexFn: networkRegex,
     permissions: NETWORK_SECURITY_CONFIG_RULES,
     nameFile: networkSecurityName,

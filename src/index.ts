@@ -1,47 +1,32 @@
-import { Command } from 'commander';
-import { verify } from './commands/verify.js';
-import { automate } from './commands/automate.js';
-import { openUrl } from './utils/openUrl.js';
+import { CommanderError } from 'commander';
+import { createProgram } from './cli/program.js';
 import { logger } from './utils/logger.js';
 
-const DOCUMENTATION_URL =
-  'https://github.com/jhonccastilloa/owasp-mobile-bp/blob/main/DOCUMENTATION.md';
+const toErrorMessage = (error: unknown): string => {
+  if (error instanceof Error) {
+    return error.message;
+  }
+  return String(error);
+};
 
-const program = new Command();
+export const run = async (argv: string[] = process.argv): Promise<void> => {
+  const program = createProgram();
+  await program.parseAsync(argv);
+};
 
-program
-  .name('owasp-bp')
-  .description('OWASP Mobile Security Verification CLI Tool')
-  .version('1.0.6')
-  .option('-v, --verbose', 'Enable verbose output', false);
+run().catch(error => {
+  if (error instanceof CommanderError) {
+    if (
+      error.code === 'commander.helpDisplayed' ||
+      error.code === 'commander.version'
+    ) {
+      process.exitCode = 0;
+      return;
+    }
 
-program
-  .command('verify')
-  .description('Analyze project for security issues')
-  .option('-p, --path <path>', 'Project path', process.cwd())
-  .action(async (options, command) => {
-    const globalOptions = command.parent.opts();
-    logger.setVerbose(globalOptions.verbose);
-    await verify(options.path);
-  });
-
-program
-  .command('automate')
-  .description('Automatically fix detected issues')
-  .option('-p, --path <path>', 'Project path', process.cwd())
-  .action(async (options, command) => {
-    const globalOptions = command.parent.opts();
-    logger.setVerbose(globalOptions.verbose);
-    await automate(options.path);
-  });
-
-program
-  .command('documentation')
-  .description('Open documentation in browser')
-  .action(async () => {
-    logger.info('Opening documentation...');
-    await openUrl(DOCUMENTATION_URL);
-    logger.success('Documentation opened in browser');
-  });
-
-program.parseAsync(process.argv);
+    logger.error(error.message);
+  } else {
+    logger.error(`Unexpected error: ${toErrorMessage(error)}`);
+  }
+  process.exitCode = 1;
+});

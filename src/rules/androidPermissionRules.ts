@@ -56,6 +56,7 @@ export const ANDROID_PERMISSION_RULES: Record<string, UserPermission> = {
       'react-native-camera',
       'react-native-qrcode-scanner',
       'react-native-image-picker',
+      'react-native-vision-camera',
     ],
     severity: 'E',
     message: 'Permiso para acceder a la cámara',

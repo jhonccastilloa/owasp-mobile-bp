@@ -150,10 +150,11 @@ export const createSSLPinnerFactory = async (
   folderPath: string,
   serverFingerprint: Fingerprints[],
   androidApplicationId: string,
-  isKotlin: boolean
+  isKotlin: boolean,
+  currentPath: string
 ) => {
-  const owaspBpConfig = await getOwaspBpConfig();
-  if (!owaspBpConfig) return;
+  const owaspBpConfig = await getOwaspBpConfig(currentPath);
+  if (!owaspBpConfig?.hostname) return;
   let SSLPinnerFactory = '';
   if (isKotlin) {
     SSLPinnerFactory = SSLPinnerFactoryTemplateKotlin({

@@ -1,5 +1,6 @@
 import tls, { PeerCertificate } from 'tls';
 import crypto from 'crypto';
+import { logger } from '@/utils/logger';
 export type Fingerprints = {
   subject: any;
   issuer: any;
@@ -20,7 +21,7 @@ export async function getFingerprints(
           const results: Fingerprints[] = [];
           const seen = new Set<string>();
 
-          let cert: any= socket.getPeerCertificate(true);
+          let cert: any = socket.getPeerCertificate(true);
           while (cert && cert.raw) {
             const x509 = new crypto.X509Certificate(cert.raw);
             const spkiDer = x509.publicKey.export({
@@ -45,7 +46,7 @@ export async function getFingerprints(
               issuer: cert.issuer,
               spki: `sha256/${spkiB64}`,
               cert: `sha256/${certB64}`,
-              validTo:cert.valid_to
+              validTo: cert.valid_to,
             });
 
             if (!cert.issuerCertificate || cert.issuerCertificate === cert)
@@ -90,7 +91,7 @@ const getCertificateFingerprint = (
 
 const getPublicKeyFingerprint = (cert: tls.PeerCertificate): string | null => {
   if (!cert.raw) {
-    console.error('❌ No certificate data available.');
+    logger.error('No certificate data available.');
     return null;
   }
 
@@ -104,7 +105,9 @@ const getPublicKeyFingerprint = (cert: tls.PeerCertificate): string | null => {
 
     return crypto.createHash('sha256').update(publicKeyDer).digest('base64');
   } catch (error) {
-    console.error('❌ Error extracting public key fingerprint:', error);
+    logger.error(
+      `Error extracting public key fingerprint: ${error instanceof Error ? error.message : String(error)}`
+    );
     return null;
   }
 };

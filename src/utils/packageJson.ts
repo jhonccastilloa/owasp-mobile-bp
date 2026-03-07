@@ -10,9 +10,17 @@ export const getPackageJson = async (currentPath: string) => {
   return jsonData;
 };
 
-export const getPackageDependencies = async (currentPath: string) => {
+export const getPackageDependencies = async (
+  currentPath: string,
+  includeDevDependencies: boolean = false
+) => {
   const packageJson = await getPackageJson(currentPath);
-  return packageJson.dependencies || {};
+  const dependencies = packageJson.dependencies || {};
+  if (!includeDevDependencies) return dependencies;
+  return {
+    ...dependencies,
+    ...(packageJson.devDependencies || {}),
+  };
 };
 export const getPackageDependencyNames = async (currentPath: string) => {
   const dependencies = await getPackageDependencies(currentPath);

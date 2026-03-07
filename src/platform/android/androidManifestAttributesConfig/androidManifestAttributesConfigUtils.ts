@@ -4,11 +4,17 @@ import path from 'path';
 
 export const androidManifestName = 'AndroidManifest.xml';
 
-export const getAndroidManifestPath = (currentPath: string) =>
-  path.join(currentPath, 'android', 'app', 'src', 'main', androidManifestName);
+export const getAndroidManifestPath = (
+  currentPath: string,
+  sourceSet: string = 'main'
+) =>
+  path.join(currentPath, 'android', 'app', 'src', sourceSet, androidManifestName);
 
-export const getAndroidManifestFile = async (currentPath: string) => {
-  const androidManifestFilePath = getAndroidManifestPath(currentPath);
+export const getAndroidManifestFile = async (
+  currentPath: string,
+  sourceSet: string = 'main'
+) => {
+  const androidManifestFilePath = getAndroidManifestPath(currentPath, sourceSet);
   const androidManifest = await fs.promises.readFile(
     androidManifestFilePath,
     'utf-8'

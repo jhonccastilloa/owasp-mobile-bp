@@ -2,6 +2,7 @@ import { cleanBlockAndLineComment, recuperateComments } from '@/utils/tool';
 import fs from 'fs';
 import path from 'path';
 import { LOGS_JAVA_PATTERNS } from './constants';
+import { logger } from '@/utils/logger';
 
 const deleteLogsJava = async (directory: string) => {
   try {
@@ -30,7 +31,9 @@ const deleteLogsJava = async (directory: string) => {
     });
     await Promise.all(filePromises);
   } catch (err) {
-    console.error(`Error leyendo el directorio: ${directory}`, err);
+    logger.error(
+      `Failed to read directory ${directory}: ${err instanceof Error ? err.message : String(err)}`
+    );
   }
 };
 export default deleteLogsJava;

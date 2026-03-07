@@ -1,5 +1,10 @@
 import path from 'path';
 import { cleanXmlComentaries, searchFile } from '@/utils/tool';
+import {
+  AndroidVariantContext,
+  getNetworkSecurityConfigForVariant,
+  loadAndroidVariantContext,
+} from '@/platform/android/context/androidVariantContext';
 
 export const networkSecurityName = 'network_security_config.xml';
 
@@ -13,16 +18,31 @@ export const getNetworkSecurityConfigPath = async (currentPath: string) => {
 };
 
 export const networkRegex = (key: string) =>
-  new RegExp(`${key}\\s*=\\s*"([^b]*)"`, 'g');
+  new RegExp(`${key}\\s*=\\s*"([^"]*)"`, 'g');
 
-export const readNetworkSecurityConfig = async (currentPath: string) => {
-  const [networkSecurityConfigData] = await getNetworkSecurityConfigPath(
-    currentPath
-  );
-  const { comments, newData } = cleanXmlComentaries(networkSecurityConfigData!);
+export const readNetworkSecurityConfig = async (
+  currentPath: string,
+  context?: AndroidVariantContext
+) => {
+  const variantContext =
+    context ?? (await loadAndroidVariantContext(currentPath));
+  const [networkSecurityConfigData, networkSecurityConfigPath] =
+    await getNetworkSecurityConfigForVariant(currentPath, variantContext);
+
+  if (!networkSecurityConfigData) {
+    return {
+      networkSecurityConfigNoComment: '',
+      comments: [],
+      networkSecurityConfigData: '',
+      networkSecurityConfigPath: null,
+    };
+  }
+
+  const { comments, newData } = cleanXmlComentaries(networkSecurityConfigData);
   return {
     networkSecurityConfigNoComment: newData,
     comments,
-    networkSecurityConfigData: networkSecurityConfigData!,
+    networkSecurityConfigData,
+    networkSecurityConfigPath,
   };
 };

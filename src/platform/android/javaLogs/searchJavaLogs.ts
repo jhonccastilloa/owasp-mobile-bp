@@ -3,6 +3,7 @@ import { cleanBlockAndLineComment } from '@/utils/tool';
 import fs from 'fs';
 import path from 'path';
 import { LOGS_JAVA_PATTERNS } from './constants';
+import { logger } from '@/utils/logger';
 
 const searchJavaLogs = async (directory: string): Promise<Report[]> => {
   try {
@@ -35,7 +36,9 @@ const searchJavaLogs = async (directory: string): Promise<Report[]> => {
 
           report.push(...Object.values(findReport));
         } catch (err) {
-          console.error(`Error leyendo el archivo: ${filePath}`, err);
+          logger.error(
+            `Failed to read file ${filePath}: ${err instanceof Error ? err.message : String(err)}`
+          );
         }
       }
     });
@@ -43,7 +46,9 @@ const searchJavaLogs = async (directory: string): Promise<Report[]> => {
     await Promise.all(filePromises);
     return report;
   } catch (err) {
-    console.error(`Error leyendo el directorio: ${directory}`, err);
+    logger.error(
+      `Failed to read directory ${directory}: ${err instanceof Error ? err.message : String(err)}`
+    );
     return [];
   }
 };

@@ -2,11 +2,13 @@ import { PermissionData } from '@/types/global';
 import { PermissionStatus } from '@/types/enums';
 import verifyTabjackingInMainActivity from './verifyTabjacking';
 import { getMainActivityJava } from '@/utils/androidFiles';
+import path from 'path';
 
 const tabjackingAnalyze = async (currentPath: string) => {
-  const { mainActivityFile } = await getMainActivityJava(currentPath);
+  const { mainActivityFile, mainActivityPath } = await getMainActivityJava(currentPath);
   const { message, status } = await verifyTabjackingInMainActivity(
-    mainActivityFile
+    mainActivityFile,
+    mainActivityPath
   );
 
   const data: PermissionData = {
@@ -16,7 +18,7 @@ const tabjackingAnalyze = async (currentPath: string) => {
     severity: 'E',
     message,
     owaspCategory: 'M7',
-    nameFile: 'MainActivity.java',
+    nameFile: mainActivityPath ? path.basename(mainActivityPath) : 'MainActivity',
   };
   return data;
 };

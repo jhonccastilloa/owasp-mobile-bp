@@ -6,6 +6,7 @@ import {
   getBuildGradleFile,
   getBuildGradlePath,
 } from './buildGradleUtils';
+import { isVersionGreaterOrEqual } from '@/utils/version';
 
 const buildGradleFix = async (currentPath: string) => {
   let { buildGradleNoComment, comments } = await getBuildGradleFile(
@@ -16,7 +17,14 @@ const buildGradleFix = async (currentPath: string) => {
     const regex = buildGradleFixRegex(key);
     const value = data.values[0];
     const valueTransform = value.includes('.') ? `"${value}"` : value;
-    if (regex.test(buildGradleNoComment)) {
+    const match = regex.exec(buildGradleNoComment);
+    if (match) {
+      const currentValue = match[1] ?? match[2] ?? '';
+      const isAlreadySecure =
+        data.strategy === 'min'
+          ? isVersionGreaterOrEqual(currentValue, value)
+          : currentValue === value;
+      if (isAlreadySecure) return;
       buildGradleNoComment = buildGradleNoComment.replace(
         regex,
         `${key} = ${valueTransform}`

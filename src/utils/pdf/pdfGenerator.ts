@@ -4,15 +4,34 @@ import path from 'path';
 import fs from 'fs';
 import { logger } from '../logger';
 
-let pdfmakeInstance: any = null;
+type PdfMakeLike = {
+  createPdf: (docDefinition: unknown) => {
+    getBase64: (callback: (data: string) => void) => void;
+  };
+  addVirtualFileSystem?: (vfs: unknown) => void;
+  vfs?: unknown;
+};
+
+let pdfmakeInstance: PdfMakeLike | null = null;
 
 const initializePdfMake = async () => {
   if (!pdfmakeInstance) {
-    const pdfmakeModule = await import('pdfmake/build/pdfmake');
-    const pdfFontsModule = await import('pdfmake/build/vfs_fonts');
-    
-    pdfmakeModule.default.addVirtualFileSystem(pdfFontsModule.default);
-    pdfmakeInstance = pdfmakeModule.default;
+    const pdfmakeModule = await import('pdfmake/build/pdfmake.js');
+    const pdfFontsModule = await import('pdfmake/build/vfs_fonts.js');
+
+    const pdfmake = pdfmakeModule.default as PdfMakeLike;
+    const fonts = pdfFontsModule.default as {
+      vfs?: unknown;
+      pdfMake?: { vfs?: unknown };
+    };
+
+    if (typeof pdfmake.addVirtualFileSystem === 'function') {
+      pdfmake.addVirtualFileSystem(fonts);
+    } else {
+      pdfmake.vfs = fonts.pdfMake?.vfs ?? fonts.vfs;
+    }
+
+    pdfmakeInstance = pdfmake;
   }
   return pdfmakeInstance;
 };

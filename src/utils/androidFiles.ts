@@ -6,12 +6,21 @@ const getJavaComPath = (currentPath: string) =>
 
 export const getMainActivityJava = async (currentPath: string) => {
   const javaComPath = getJavaComPath(currentPath);
-  const [mainActivityFile, mainActivityPath] = await searchFile(
-    javaComPath,
-    'MainActivity.java'
-  );
-
-  return { mainActivityFile, mainActivityPath };
+  const mainActivityNames = ['MainActivity.java', 'MainActivity.kt'];
+  for (const mainActivityName of mainActivityNames) {
+    const [mainActivityFile, mainActivityPath] = await searchFile(
+      javaComPath,
+      mainActivityName
+    );
+    if (mainActivityFile) {
+      return { mainActivityFile, mainActivityPath, mainActivityName };
+    }
+  }
+  return {
+    mainActivityFile: null,
+    mainActivityPath: null,
+    mainActivityName: null,
+  };
 };
 export const getMainApplication = async (
   currentPath: string

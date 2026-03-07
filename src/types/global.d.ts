@@ -19,6 +19,8 @@ export interface Report {
 
 export interface GeneralPermission extends Permission {
   values: string[];
+  target?: 'manifest' | 'application' | 'mainActivity';
+  strategy?: 'exact' | 'min';
 }
 
 export interface PermissionData extends Permission {

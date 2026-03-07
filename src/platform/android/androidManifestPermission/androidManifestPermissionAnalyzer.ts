@@ -1,51 +1,25 @@
-import fs from 'fs';
-import path from 'path';
 import { PermissionData } from '@/types/global';
-import {
-  cleanXmlComentaries,
-  linesUpToMatch,
-  validateSeverity,
-} from '@/utils/tool';
+import { validateSeverity } from '@/utils/tool';
 import { PermissionStatus } from '@/types/enums';
 import { ANDROID_PERMISSION_RULES } from '@/rules';
-import { AMUserPermision } from './types';
 import { getPackageDependencyNames } from '@/utils/packageJson';
-
-const getManifestPermissions = async (
-  androidManifestFilePath: string
-): Promise<AMUserPermision[]> => {
-  const readData = await fs.promises.readFile(androidManifestFilePath, 'utf-8');
-  const { newData: data } = cleanXmlComentaries(readData);
-  const regex = /<uses-permission\s+android:name\s*?=\s*?"([^"]+)"/g;
-  let match: RegExpExecArray | null;
-  const permissions: AMUserPermision[] = [];
-  while ((match = regex.exec(data)) !== null) {
-    const matchPosition = match.index;
-    const numLine = linesUpToMatch(data, matchPosition);
-    permissions.push({
-      permission: match[1].replace('android.permission.', ''),
-      numLine,
-    });
-  }
-  return permissions;
-};
+import {
+  AndroidVariantContext,
+  getMergedManifestPermissions,
+  loadAndroidVariantContext,
+} from '@/platform/android/context/androidVariantContext';
 
 const androidManifestPermissionAnalyze = async (
-  currentPath: string
+  currentPath: string,
+  context?: AndroidVariantContext
 ): Promise<PermissionData[]> => {
   try {
     const packageDependencyNamesSet = new Set(
       await getPackageDependencyNames(currentPath)
     );
-    const manifestPath = path.join(
-      currentPath,
-      'android',
-      'app',
-      'src',
-      'main',
-      'AndroidManifest.xml'
-    );
-    const manifestPermissions = await getManifestPermissions(manifestPath);
+    const variantContext =
+      context ?? (await loadAndroidVariantContext(currentPath));
+    const manifestPermissions = getMergedManifestPermissions(variantContext);
 
     const owaspPermission = [];
 
@@ -72,7 +46,7 @@ const androidManifestPermissionAnalyze = async (
                 requiredPermission.severity,
                 hasRequiredDependency
               ),
-          nameFile: 'AndroidManifest.xml',
+          nameFile: manifestPermission.nameFile,
         };
         owaspPermission.push(data);
       }

@@ -1,7 +1,6 @@
 import { getMainApplication } from '@/utils/androidFiles';
 import {
   createSSLPinnerFactory,
-  getServerFingerprint,
   getSSLPinningFile,
   updateMainApplication,
 } from './androidSSLPinningUtils';
@@ -10,12 +9,13 @@ import getAndroidApplicationId from '@/utils/getAndroidApplicationId';
 import getOwaspBpConfig from '@/utils/owasp-bp.config';
 import { PermissionStatus } from '@/types/enums';
 import { getFingerprints } from './getCertificateFingerprint';
+import { logger } from '@/utils/logger';
 
 const androidSSLPinningFix = async (currentPath: string) => {
   const { SSLPinningFile, fileName } = await getSSLPinningFile(currentPath);
   const { status } = await verifySSLPinning(SSLPinningFile, fileName);
   if (status === PermissionStatus.OK) return;
-  let { mainApplicationFile, mainApplicationPath, mainAplicationName } =
+  const { mainApplicationFile, mainApplicationPath, mainAplicationName } =
     await getMainApplication(currentPath);
 
   if (!mainApplicationPath || !mainApplicationFile || !mainAplicationName)
@@ -25,17 +25,25 @@ const androidSSLPinningFix = async (currentPath: string) => {
     ''
   );
   const androidApplicationId = await getAndroidApplicationId(currentPath);
-  const owaspBpConfig = await getOwaspBpConfig();
-  if (!owaspBpConfig) return;
+  if (!androidApplicationId) {
+    logger.warn('Android applicationId not found, skipping SSL pinning fixer');
+    return;
+  }
+
+  const owaspBpConfig = await getOwaspBpConfig(currentPath);
+  if (!owaspBpConfig?.hostname) {
+    logger.warn("File 'owasp-bp.config.json' missing required 'hostname'.");
+    return;
+  }
   const fingerprints = await getFingerprints(owaspBpConfig.hostname);
-  createSSLPinnerFactory(
+  await createSSLPinnerFactory(
     mainApplicationFolder,
     fingerprints,
-    androidApplicationId!,
-
-    mainAplicationName.endsWith('.kt')
+    androidApplicationId,
+    mainAplicationName.endsWith('.kt'),
+    currentPath
   );
   updateMainApplication(mainApplicationPath, mainApplicationFile);
-  console.log('✅ ¡Corrección de SSL Pinning aplicada con éxito!');
+  logger.success('SSL Pinning fixer applied successfully');
 };
 export default androidSSLPinningFix;

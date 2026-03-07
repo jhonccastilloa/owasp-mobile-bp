@@ -1,13 +1,13 @@
 import fs from 'fs';
 import path from 'path';
+import { logger } from './logger';
+import { OwaspBpConfig } from '@/types/audit';
 
-interface OwaspBpConfig {
-  hostname: string;
-}
-
-const getOwaspBpConfig = async () => {
+const getOwaspBpConfig = async (
+  currentPath: string = process.cwd(),
+  silent: boolean = false
+) => {
   try {
-    const currentPath = process.cwd();
     const owaspBpConfigPath = path.join(currentPath, 'owasp-bp.config.json');
     const owaspBpConfigFile = await fs.promises.readFile(
       owaspBpConfigPath,
@@ -15,8 +15,10 @@ const getOwaspBpConfig = async () => {
     );
     const owaspBpConfigJson: OwaspBpConfig = JSON.parse(owaspBpConfigFile);
     return owaspBpConfigJson;
-  } catch (error) {
-    console.log("🚫 Arhivo 'owasp-bp.config.json' no encontrado.");
+  } catch {
+    if (!silent) {
+      logger.warn("File 'owasp-bp.config.json' not found.");
+    }
     return null;
   }
 };

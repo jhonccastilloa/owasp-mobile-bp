@@ -20,12 +20,19 @@ const javaLogsAnalyze = async (currentPath: string) => {
   let message = '';
   let status = false;
   if (regexRasp.test(buildGradleAppContent)) {
-    status = true;
-    message = 'No se encontraron logs en archivos Java.';
+    status = javaLogsFound.length === 0;
+    message =
+      javaLogsFound.length === 0
+        ? 'No se encontraron logs en archivos Java.'
+        : `Se detectaron ${javaLogsFound.length} archivo(s) con logs Java aunque ShieldSDK está presente.`;
   } else {
     const proguard = verifyProguardConfig(currentPath, {});
-    status = proguard.status;
-    message = proguard.message;
+    status = proguard.status && javaLogsFound.length === 0;
+    if (javaLogsFound.length === 0) {
+      message = proguard.message;
+    } else {
+      message = `Se detectaron ${javaLogsFound.length} archivo(s) con logs Java. ${proguard.message}`;
+    }
   }
 
   const data: PermissionData = {

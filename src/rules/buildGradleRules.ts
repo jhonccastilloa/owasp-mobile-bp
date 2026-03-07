@@ -3,6 +3,7 @@ import { GeneralPermission } from '../types/global';
 export const BUILD_GRADLE_RULES: Record<string, GeneralPermission> = {
   minSdkVersion: {
     values: ['27'],
+    strategy: 'min',
     severity: 'W',
     message:
       'Se usa una versión mínima segura para evitar vulnerabilidades obsoletas en minSdkVersion.',
@@ -10,6 +11,7 @@ export const BUILD_GRADLE_RULES: Record<string, GeneralPermission> = {
   },
   compileSdkVersion: {
     values: ['35'],
+    strategy: 'min',
     severity: 'W',
     message:
       'La app se compila con la última versión del SDK en compileSdkVersion, maximizando la seguridad.',
@@ -17,6 +19,7 @@ export const BUILD_GRADLE_RULES: Record<string, GeneralPermission> = {
   },
   targetSdkVersion: {
     values: ['35'],
+    strategy: 'min',
     severity: 'W',
     message:
       'La app se compila con la última versión del SDK en targetSdkVersion, maximizando la seguridad.',
@@ -24,6 +27,7 @@ export const BUILD_GRADLE_RULES: Record<string, GeneralPermission> = {
   },
   buildToolsVersion: {
     values: ['35.0.0'],
+    strategy: 'min',
     severity: 'W',
     message:
       'La app se compila con la última versión del SDK en buildToolsVersion, maximizando la seguridad.',

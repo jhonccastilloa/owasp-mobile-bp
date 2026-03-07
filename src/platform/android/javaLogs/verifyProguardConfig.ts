@@ -12,10 +12,18 @@ const RULE = `-assumenosideeffects class android.util.Log {
 const verifyProguardConfig = (currentPath: string, { repair = false }) => {
   const proguardFile = path.join(currentPath, 'android/app/proguard-rules.pro');
 
-  if (!fs.existsSync(proguardFile) && !repair) {
+  if (!fs.existsSync(proguardFile)) {
+    if (!repair) {
+      return {
+        status: false,
+        message: `❌ No se encontró ${proguardFile}`,
+      };
+    }
+
+    fs.writeFileSync(proguardFile, `${RULE}\n`, 'utf-8');
     return {
-      status: false,
-      message: `❌ No se encontró ${proguardFile}`,
+      status: true,
+      message: '✅ ProGuard configurado para eliminar logs en release.',
     };
   }
 
@@ -30,8 +38,7 @@ const verifyProguardConfig = (currentPath: string, { repair = false }) => {
       fs.appendFileSync(proguardFile, `\n${RULE}\n`);
       return {
         status: true,
-        message:
-          '✅ ProGuard ya está configurado para eliminar logs en release.',
+        message: '✅ ProGuard configurado para eliminar logs en release.',
       };
     }
   }

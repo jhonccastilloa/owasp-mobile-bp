@@ -16,9 +16,6 @@ const riskColor = (risk: string) =>
     low: '#2e7d32',
   })[risk] ?? '#37474f';
 
-const shortText = (value: string, max = 72) =>
-  value.length > max ? `${value.slice(0, max - 3)}...` : value;
-
 const pdfAutomationTemplate = (
   report: AutomationRunReport
 ): TDocumentDefinitions => {
@@ -69,7 +66,7 @@ const pdfAutomationTemplate = (
   const ruleSummaryTable = {
     table: {
       headerRows: 1,
-      widths: ['27%', '10%', '15%', '10%', '8%', '30%'],
+      widths: ['24%', '9%', '14%', '9%', '8%', '36%'],
       body: [
         [
           { text: 'Rule', style: 'tableHeader' },
@@ -94,11 +91,10 @@ const pdfAutomationTemplate = (
           },
           { text: `${result.filesChanged.length}`, style: 'tableCell', alignment: 'center' },
           {
-            text: shortText(
+            text:
               result.reasonMessage ??
-                result.manualAction ??
-                'No additional notes.'
-            ),
+              result.manualAction ??
+              'No additional notes.',
             style: 'tableCell',
           },
         ]),
@@ -125,9 +121,9 @@ const pdfAutomationTemplate = (
                 { text: 'After', style: 'tableHeader' },
               ],
               ...result.beforeAfter.map(item => [
-                { text: shortText(item.file, 38), style: 'tableCell' },
-                { text: shortText(item.before, 70), style: 'tableCell' },
-                { text: shortText(item.after, 70), style: 'tableCell' },
+                { text: item.file, style: 'tableCell' },
+                { text: item.before, style: 'tableCell' },
+                { text: item.after, style: 'tableCell' },
               ]),
             ],
           },

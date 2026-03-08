@@ -18,7 +18,6 @@ import buildGradleFix from '@/platform/android/buildGradle/buildGradleFixer';
 import { getBuildGradlePath } from '@/platform/android/buildGradle/buildGradleUtils';
 import {
   loadAndroidVariantContext,
-  AndroidVariantContext,
 } from '@/platform/android/context/androidVariantContext';
 import javaLogsAnalyze from '@/platform/android/javaLogs/javaLogsAnalyzer';
 import javaLogsFix from '@/platform/android/javaLogs/javaLogsFixer';
@@ -298,17 +297,20 @@ const executeTask = async (
 
 const buildAndroidTasks = (
   currentPath: string,
-  context: AndroidVariantContext,
   options: AuditOptions
-): AutomationTaskDefinition[] => [
+): AutomationTaskDefinition[] => {
+  const getContext = () => loadAndroidVariantContext(currentPath);
+  return [
   {
     ruleId: 'android.manifest.attributes',
     platform: 'android',
     risk: 'low',
     manualAction:
       'Review android/app/src/main/AndroidManifest.xml attributes manually and rerun verify.',
-    analyze: () => androidManifestAttributesConfigAnalyze(currentPath, context),
-    fix: () => androidManifestAttributesConfigFix(currentPath, context, options),
+    analyze: async () =>
+      androidManifestAttributesConfigAnalyze(currentPath, await getContext()),
+    fix: async () =>
+      androidManifestAttributesConfigFix(currentPath, await getContext(), options),
     collectFiles: async () => [getAndroidManifestPath(currentPath, 'main')],
   },
   {
@@ -317,10 +319,14 @@ const buildAndroidTasks = (
     risk: 'low',
     manualAction:
       'Review network security config XML in src/main and enforce cleartextTrafficPermitted=false.',
-    analyze: () => networkSecurityConfigAnalyze(currentPath, context),
-    fix: () => networkSecurityConfigFix(currentPath, context),
+    analyze: async () =>
+      networkSecurityConfigAnalyze(currentPath, await getContext()),
+    fix: async () => networkSecurityConfigFix(currentPath, await getContext()),
     collectFiles: async () => {
-      const networkConfig = await readNetworkSecurityConfig(currentPath, context);
+      const networkConfig = await readNetworkSecurityConfig(
+        currentPath,
+        await getContext()
+      );
       if (networkConfig.networkSecurityConfigPath) {
         return [networkConfig.networkSecurityConfigPath];
       }
@@ -343,7 +349,7 @@ const buildAndroidTasks = (
     manualAction:
       'Review AndroidManifest permissions manually and remove unnecessary permissions.',
     analyze: async () =>
-      (await androidManifestPermissionAnalyze(currentPath, context)).filter(
+      (await androidManifestPermissionAnalyze(currentPath, await getContext())).filter(
         item =>
           !LEGACY_STORAGE_PERMISSIONS.has(item.permission) &&
           !LEGACY_AUTO_REMOVABLE_PERMISSIONS.has(item.permission)
@@ -358,7 +364,7 @@ const buildAndroidTasks = (
     manualAction:
       'Review storage access flow and confirm READ_MEDIA_* permissions after migration.',
     analyze: async () =>
-      (await androidManifestPermissionAnalyze(currentPath, context)).filter(item =>
+      (await androidManifestPermissionAnalyze(currentPath, await getContext())).filter(item =>
         LEGACY_STORAGE_PERMISSIONS.has(item.permission)
       ),
     fix: () => fixAndroidStorageLegacyPermissions(currentPath),
@@ -371,7 +377,7 @@ const buildAndroidTasks = (
     manualAction:
       'Review removed legacy permissions and validate runtime behavior on API 33+.',
     analyze: async () =>
-      (await androidManifestPermissionAnalyze(currentPath, context)).filter(item =>
+      (await androidManifestPermissionAnalyze(currentPath, await getContext())).filter(item =>
         LEGACY_AUTO_REMOVABLE_PERMISSIONS.has(item.permission)
       ),
     fix: () => fixAndroidLegacyPermissions(currentPath),
@@ -416,6 +422,7 @@ const buildAndroidTasks = (
     },
   },
 ];
+};
 
 const buildIosTasks = (
   currentPath: string
@@ -526,14 +533,13 @@ export const automate = async (
 ) => {
   const startTime = Date.now();
   const options = await resolveAuditOptions(currentPath, cliOptions);
-  const context = await loadAndroidVariantContext(currentPath);
 
   logger.section('OWASP Security Automation');
   logger.info(`Fixing issues in: ${currentPath}`);
 
   const tasks: AutomationTaskDefinition[] = [];
   if (options.platform === 'android' || options.platform === 'all') {
-    tasks.push(...buildAndroidTasks(currentPath, context, options));
+    tasks.push(...buildAndroidTasks(currentPath, options));
   }
   if (options.platform === 'ios' || options.platform === 'all') {
     tasks.push(...buildIosTasks(currentPath));

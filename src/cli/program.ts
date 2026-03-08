@@ -1,6 +1,6 @@
 import { Command } from 'commander';
 import { logger } from '@/utils/logger';
-import { PlatformScope, ReportFormat } from '@/types/audit';
+import { PlatformScope } from '@/types/audit';
 
 const DOCUMENTATION_URL =
   'https://github.com/jhonccastilloa/owasp-mobile-bp/blob/main/DOCUMENTATION.md';
@@ -27,14 +27,12 @@ export const createProgram = (): Command => {
     .description('Analyze project for security issues')
     .option('-p, --path <path>', 'Project path', process.cwd())
     .option('--platform <platform>', 'Platform: android|ios|all', 'all')
-    .option('--report-format <format>', 'Report format: pdf|json|both', 'both')
     .option('--include-dev-dependencies', 'Analyze devDependencies for vulnerable libraries', false)
     .action(async (options, command) => {
       setVerboseMode(command);
       const { verify } = await import('@/commands/verify');
       await verify(options.path, {
         platform: options.platform as PlatformScope,
-        reportFormat: options.reportFormat as ReportFormat,
         includeDevDependencies: options.includeDevDependencies,
       });
     });
@@ -44,14 +42,12 @@ export const createProgram = (): Command => {
     .description('Automatically fix detected issues')
     .option('-p, --path <path>', 'Project path', process.cwd())
     .option('--platform <platform>', 'Platform: android|ios|all', 'all')
-    .option('--report-format <format>', 'Report format: pdf|json|both', 'both')
     .option('--include-dev-dependencies', 'Analyze devDependencies for vulnerable libraries', false)
     .action(async (options, command) => {
       setVerboseMode(command);
       const { automate } = await import('@/commands/automate');
       await automate(options.path, {
         platform: options.platform as PlatformScope,
-        reportFormat: options.reportFormat as ReportFormat,
         includeDevDependencies: options.includeDevDependencies,
       });
     });

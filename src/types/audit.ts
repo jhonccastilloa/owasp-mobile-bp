@@ -2,25 +2,21 @@ import { PermissionStatus } from './enums';
 import { PermissionData } from './global';
 
 export type PlatformScope = 'android' | 'ios' | 'all';
-export type ReportFormat = 'pdf' | 'json' | 'both';
 
 export interface AuditOptions {
   projectPath: string;
   platform: PlatformScope;
-  reportFormat: ReportFormat;
   includeDevDependencies: boolean;
 }
 
 export interface AuditCliOptions {
   platform?: PlatformScope;
-  reportFormat?: ReportFormat;
   includeDevDependencies?: boolean;
 }
 
 export interface OwaspBpConfig {
   hostname: string;
   platforms?: PlatformScope;
-  reportFormat?: ReportFormat;
   includeDevDependencies?: boolean;
   iosInfoPlistPath?: string;
 }
@@ -98,7 +94,6 @@ export interface AutomationRunReport {
   command: string;
   options: {
     platform: PlatformScope;
-    reportFormat: ReportFormat;
     includeDevDependencies: boolean;
   };
   summary: AutomationReportSummary;

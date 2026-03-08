@@ -25,7 +25,6 @@ import {
   resolveAndroidVariants,
 } from '@/platform/android/context/androidVariantContext';
 import { permissionDataToFindings } from '@/utils/report/findings';
-import { writeJsonReport } from '@/utils/report/jsonReport';
 
 const getErrorMessage = (error: unknown): string => {
   if (error instanceof Error) return error.message;
@@ -214,26 +213,15 @@ export const verify = async (
   const appProject = getJsonAppProject(currentPath);
   const currentBranch = await getCurrentGitBranch(currentPath);
 
-  if (options.reportFormat === 'pdf' || options.reportFormat === 'both') {
-    const dataForPdf = transformDataForPdf(permissionData);
-    const pdfData: PdfData = {
-      appName: appProject.displayName,
-      currentBranch,
-      date: formatDate(today),
-      ...dataForPdf,
-    };
-    await generatePDF(pdfData, currentPath);
-    logger.info(`Report generated: ${path.join(currentPath, 'owasp-bp.pdf')}`);
-  }
-
-  if (options.reportFormat === 'json' || options.reportFormat === 'both') {
-    const jsonPath = await writeJsonReport(currentPath, {
-      appName: appProject.displayName,
-      generatedAt: new Date().toISOString(),
-      findings,
-    });
-    logger.info(`JSON report generated: ${jsonPath}`);
-  }
+  const dataForPdf = transformDataForPdf(permissionData);
+  const pdfData: PdfData = {
+    appName: appProject.displayName,
+    currentBranch,
+    date: formatDate(today),
+    ...dataForPdf,
+  };
+  await generatePDF(pdfData, currentPath);
+  logger.info(`Report generated: ${path.join(currentPath, 'owasp-bp.pdf')}`);
 
   const endTime = Date.now();
   const durationSeconds = ((endTime - startTime) / 1000).toFixed(2);

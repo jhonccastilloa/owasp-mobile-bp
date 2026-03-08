@@ -3,7 +3,6 @@ import getOwaspBpConfig from './owasp-bp.config';
 
 const DEFAULT_AUDIT_OPTIONS: Omit<AuditOptions, 'projectPath'> = {
   platform: 'all',
-  reportFormat: 'both',
   includeDevDependencies: false,
 };
 
@@ -18,10 +17,6 @@ export const resolveAuditOptions = async (
       cliOptions.platform ??
       config?.platforms ??
       DEFAULT_AUDIT_OPTIONS.platform,
-    reportFormat:
-      cliOptions.reportFormat ??
-      config?.reportFormat ??
-      DEFAULT_AUDIT_OPTIONS.reportFormat,
     includeDevDependencies:
       cliOptions.includeDevDependencies ??
       config?.includeDevDependencies ??

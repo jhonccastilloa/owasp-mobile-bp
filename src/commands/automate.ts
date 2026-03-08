@@ -57,7 +57,6 @@ import { getCurrentGitBranch } from '@/utils/git';
 import { getJsonAppProject } from '@/utils/jsonAppProject';
 import { logger } from '@/utils/logger';
 import { generateAutomationPDF } from '@/utils/pdf/automationPdfGenerator';
-import { writeAutomationJsonReport } from '@/utils/report/automationJsonReport';
 import { getAutomationSummary } from '@/utils/report/automationSummary';
 import { getAndroidManifestPath } from '@/platform/android/androidManifestAttributesConfig/androidManifestAttributesConfigUtils';
 import { getMainActivityJava, getMainApplication } from '@/utils/androidFiles';
@@ -522,7 +521,6 @@ const buildCommandLine = (currentPath: string, options: AuditOptions) => {
     'owasp-bp automate',
     `--path ${currentPath}`,
     `--platform ${options.platform}`,
-    `--report-format ${options.reportFormat}`,
     options.includeDevDependencies ? '--include-dev-dependencies' : '',
   ].filter(Boolean);
   return args.join(' ');
@@ -572,22 +570,14 @@ export const automate = async (
     command: buildCommandLine(currentPath, options),
     options: {
       platform: options.platform,
-      reportFormat: options.reportFormat,
       includeDevDependencies: options.includeDevDependencies,
     },
     summary: getAutomationSummary(results),
     results,
   };
 
-  if (options.reportFormat === 'json' || options.reportFormat === 'both') {
-    const jsonPath = await writeAutomationJsonReport(currentPath, report);
-    logger.info(`Automation JSON report generated: ${jsonPath}`);
-  }
-
-  if (options.reportFormat === 'pdf' || options.reportFormat === 'both') {
-    const pdfPath = await generateAutomationPDF(report, currentPath);
-    logger.info(`Automation PDF report generated: ${pdfPath}`);
-  }
+  const pdfPath = await generateAutomationPDF(report, currentPath);
+  logger.info(`Automation PDF report generated: ${pdfPath}`);
 
   const failedRules = results.filter(result => result.status === 'FAILED');
   const endTime = Date.now();

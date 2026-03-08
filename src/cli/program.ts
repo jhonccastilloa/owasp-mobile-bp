@@ -29,16 +29,11 @@ export const createProgram = (): Command => {
     .option('--platform <platform>', 'Platform: android|ios|all', 'all')
     .option('--report-format <format>', 'Report format: pdf|json|both', 'both')
     .option('--include-dev-dependencies', 'Analyze devDependencies for vulnerable libraries', false)
-    .option('--safe', 'Enable safe mode for fixes', true)
-    .option('--no-safe', 'Disable safe mode')
-    .option('--fix-risky', 'Allow risky fixes', false)
     .action(async (options, command) => {
       setVerboseMode(command);
       const { verify } = await import('@/commands/verify');
       await verify(options.path, {
         platform: options.platform as PlatformScope,
-        safe: options.safe,
-        fixRisky: options.fixRisky,
         reportFormat: options.reportFormat as ReportFormat,
         includeDevDependencies: options.includeDevDependencies,
       });
@@ -51,16 +46,11 @@ export const createProgram = (): Command => {
     .option('--platform <platform>', 'Platform: android|ios|all', 'all')
     .option('--report-format <format>', 'Report format: pdf|json|both', 'both')
     .option('--include-dev-dependencies', 'Analyze devDependencies for vulnerable libraries', false)
-    .option('--safe', 'Enable safe mode for fixes', true)
-    .option('--no-safe', 'Disable safe mode')
-    .option('--fix-risky', 'Allow risky fixes', false)
     .action(async (options, command) => {
       setVerboseMode(command);
       const { automate } = await import('@/commands/automate');
       await automate(options.path, {
         platform: options.platform as PlatformScope,
-        safe: options.safe,
-        fixRisky: options.fixRisky,
         reportFormat: options.reportFormat as ReportFormat,
         includeDevDependencies: options.includeDevDependencies,
       });

@@ -6,7 +6,42 @@ import {
 import { NETWORK_SECURITY_CONFIG_RULES } from '@/rules';
 import { recuperateComments } from '@/utils/tool';
 import { logger } from '@/utils/logger';
-import { AndroidVariantContext } from '@/platform/android/context/androidVariantContext';
+import {
+  AndroidVariantContext,
+  loadAndroidVariantContext,
+} from '@/platform/android/context/androidVariantContext';
+
+const setUsesCleartextTrafficFalseInMainManifest = async (
+  currentPath: string,
+  context?: AndroidVariantContext
+) => {
+  const variantContext = context ?? (await loadAndroidVariantContext(currentPath));
+  const manifestPath = variantContext.mainManifestPath;
+  const manifestContent =
+    variantContext.mainManifestContent ||
+    (await fs.promises.readFile(manifestPath, 'utf8'));
+
+  const applicationTagRegex = /<application\b[^>]*>/;
+  const applicationTagMatch = applicationTagRegex.exec(manifestContent);
+  if (!applicationTagMatch) {
+    logger.warn('Main <application> tag not found, skipping usesCleartextTraffic fallback');
+    return;
+  }
+
+  const applicationTag = applicationTagMatch[0];
+  const updatedApplicationTag = /android:usesCleartextTraffic\s*=/.test(applicationTag)
+    ? applicationTag.replace(
+        /android:usesCleartextTraffic\s*=\s*"[^"]*"/g,
+        'android:usesCleartextTraffic="false"'
+      )
+    : applicationTag.replace(/>$/, ' android:usesCleartextTraffic="false">');
+
+  if (updatedApplicationTag === applicationTag) return;
+
+  const updatedManifest = manifestContent.replace(applicationTag, updatedApplicationTag);
+  await fs.promises.writeFile(manifestPath, updatedManifest, 'utf8');
+  logger.success('Applied fallback android:usesCleartextTraffic="false" in main AndroidManifest.xml');
+};
 
 const setClearTextFalse = (content: string) => {
   if (content.includes('cleartextTrafficPermitted=')) {
@@ -45,7 +80,7 @@ const networkSecurityConfigFix = async (
     await readNetworkSecurityConfig(currentPath, context);
 
   if (!networkSecurityConfigPath) {
-    logger.warn('Network Security Config not found, skipping fixer');
+    await setUsesCleartextTrafficFalseInMainManifest(currentPath, context);
     return;
   }
 

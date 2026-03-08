@@ -4,6 +4,12 @@ import path from 'path';
 import androidManifestAttributesConfigAnalyze from '@/platform/android/androidManifestAttributesConfig/androidManifestAttributesConfigAnalyzer';
 import androidManifestAttributesConfigFix from '@/platform/android/androidManifestAttributesConfig/androidManifestAttributesConfigFixer';
 import androidManifestPermissionAnalyze from '@/platform/android/androidManifestPermission/androidManifestPermissionAnalyzer';
+import fixAndroidManifestPermissions from '@/platform/android/androidManifestPermission/androidManifestPermissionFixer';
+import {
+  fixAndroidLegacyPermissions,
+  getAutoRemovableManifestPermissions,
+} from '@/platform/android/androidManifestPermission/androidLegacyPermissionFixer';
+import { fixAndroidStorageLegacyPermissions } from '@/platform/android/androidManifestPermission/androidStoragePermissionFixer';
 import androidSSLPinningAnalyze from '@/platform/android/androidSSLPinning/androidSSLPinningAnalyzer';
 import androidSSLPinningFix from '@/platform/android/androidSSLPinning/androidSSLPinningFixer';
 import { getSSLPinningFile } from '@/platform/android/androidSSLPinning/androidSSLPinningUtils';
@@ -77,6 +83,14 @@ interface AutomationTaskDefinition {
     message: string;
   };
 }
+
+const LEGACY_STORAGE_PERMISSIONS = new Set([
+  'READ_EXTERNAL_STORAGE',
+  'WRITE_EXTERNAL_STORAGE',
+]);
+const LEGACY_AUTO_REMOVABLE_PERMISSIONS = new Set(
+  getAutoRemovableManifestPermissions()
+);
 
 const stringifyMessage = (message: PermissionData['message']): string => {
   if (typeof message === 'string') return message;
@@ -179,7 +193,6 @@ const getBeforeAfterEvidence = (
 
 const getReasonCode = (message: string): AutomationSkipReasonCode => {
   const msg = message.toLowerCase();
-  if (msg.includes('safe')) return 'SAFE_MODE_BLOCKED';
   if (msg.includes('hostname') || msg.includes('config')) return 'MISSING_CONFIG';
   if (msg.includes('pattern')) return 'PATTERN_NOT_FOUND';
   if (msg.includes('not found') || msg.includes('no se encontró') || msg.includes('no se ha encontrado')) {
@@ -202,7 +215,7 @@ const executeTask = async (
         risk: task.risk,
         filesChanged: [],
         beforeAfter: [],
-        reasonCode: task.skipReason?.code ?? 'SAFE_MODE_BLOCKED',
+        reasonCode: task.skipReason?.code ?? 'MANUAL_REVIEW_REQUIRED',
         reasonMessage: task.skipReason?.message ?? 'Skipped by execution policy.',
         manualAction: task.manualAction,
         durationMs: Date.now() - startTime,
@@ -313,9 +326,10 @@ const buildAndroidTasks = (
     fix: () => networkSecurityConfigFix(currentPath, context),
     collectFiles: async () => {
       const networkConfig = await readNetworkSecurityConfig(currentPath, context);
-      return networkConfig.networkSecurityConfigPath
-        ? [networkConfig.networkSecurityConfigPath]
-        : [];
+      if (networkConfig.networkSecurityConfigPath) {
+        return [networkConfig.networkSecurityConfigPath];
+      }
+      return [getAndroidManifestPath(currentPath, 'main')];
     },
   },
   {
@@ -328,13 +342,54 @@ const buildAndroidTasks = (
     collectFiles: async () => [getBuildGradlePath(currentPath)],
   },
   {
+    ruleId: 'android.manifest.permissions',
+    platform: 'android',
+    risk: 'medium',
+    manualAction:
+      'Review AndroidManifest permissions manually and remove unnecessary permissions.',
+    analyze: async () =>
+      (await androidManifestPermissionAnalyze(currentPath, context)).filter(
+        item =>
+          !LEGACY_STORAGE_PERMISSIONS.has(item.permission) &&
+          !LEGACY_AUTO_REMOVABLE_PERMISSIONS.has(item.permission)
+      ),
+    fix: () => fixAndroidManifestPermissions(currentPath),
+    collectFiles: async () => [getAndroidManifestPath(currentPath, 'main')],
+  },
+  {
+    ruleId: 'android.manifest.storage.permissions',
+    platform: 'android',
+    risk: 'medium',
+    manualAction:
+      'Review storage access flow and confirm READ_MEDIA_* permissions after migration.',
+    analyze: async () =>
+      (await androidManifestPermissionAnalyze(currentPath, context)).filter(item =>
+        LEGACY_STORAGE_PERMISSIONS.has(item.permission)
+      ),
+    fix: () => fixAndroidStorageLegacyPermissions(currentPath),
+    collectFiles: async () => [getAndroidManifestPath(currentPath, 'main')],
+  },
+  {
+    ruleId: 'android.manifest.legacy.permissions',
+    platform: 'android',
+    risk: 'medium',
+    manualAction:
+      'Review removed legacy permissions and validate runtime behavior on API 33+.',
+    analyze: async () =>
+      (await androidManifestPermissionAnalyze(currentPath, context)).filter(item =>
+        LEGACY_AUTO_REMOVABLE_PERMISSIONS.has(item.permission)
+      ),
+    fix: () => fixAndroidLegacyPermissions(currentPath),
+    collectFiles: async () => [getAndroidManifestPath(currentPath, 'main')],
+  },
+  {
     ruleId: 'android.java.logs',
     platform: 'android',
-    risk: options.safe ? 'low' : 'medium',
+    risk: 'medium',
     manualAction:
       'Review Java logs and Proguard settings manually if still non-compliant.',
     analyze: () => javaLogsAnalyze(currentPath),
-    fix: () => javaLogsFix(currentPath, options),
+    fix: () => javaLogsFix(currentPath),
     collectFiles: async () => [path.join(currentPath, 'android', 'app', 'proguard-rules.pro')],
   },
   {
@@ -414,15 +469,10 @@ const buildIosTasks = (
     manualAction:
       'Add required NS*UsageDescription keys manually if missing in Info.plist.',
     analyze: () => iosPermissionsAnalyze(currentPath),
-    fix: () => iosPermissionsFix(currentPath, options),
+    fix: () => iosPermissionsFix(currentPath),
     collectFiles: async () => {
       const plist = await resolveProductionInfoPlist(currentPath);
       return plist.ok ? [plist.filePath] : [];
-    },
-    shouldSkip: currentOptions => currentOptions.safe && !currentOptions.fixRisky,
-    skipReason: {
-      code: 'SAFE_MODE_BLOCKED',
-      message: 'iOS permissions fixer is blocked by safe mode.',
     },
   },
 ];
@@ -434,35 +484,11 @@ const buildAnalyzeOnlyResults = async (
 ): Promise<AutomationRuleResult[]> => {
   const results: AutomationRuleResult[] = [];
   if (options.platform === 'android' || options.platform === 'all') {
-    const [permissionCheck, vulnerableLibraries] = await Promise.all([
-      androidManifestPermissionAnalyze(currentPath, context),
+    const [vulnerableLibraries] = await Promise.all([
       vulnerableLibrariesAnalyze(currentPath, {
         includeDevDependencies: options.includeDevDependencies,
       }),
     ]);
-
-    const permissionSummary = summarizeAnalyzeOutput(permissionCheck);
-    results.push({
-      ruleId: 'android.manifest.permissions',
-      platform: 'android',
-      status: permissionSummary.compliant ? 'ALREADY_COMPLIANT' : 'SKIPPED',
-      risk: 'medium',
-      filesChanged: [],
-      beforeAfter: [
-        {
-          file: 'status',
-          before: permissionSummary.summary,
-          after: permissionSummary.summary,
-        },
-      ],
-      reasonCode: permissionSummary.compliant ? undefined : 'NOT_SUPPORTED',
-      reasonMessage: permissionSummary.compliant
-        ? undefined
-        : 'This rule is analyze-only and requires manual remediation.',
-      manualAction:
-        'Review AndroidManifest permissions manually and remove unnecessary permissions.',
-      durationMs: 0,
-    });
 
     const vulnerableSummary = summarizeAnalyzeOutput(vulnerableLibraries);
     results.push({
@@ -497,8 +523,6 @@ const buildCommandLine = (currentPath: string, options: AuditOptions) => {
     `--path ${currentPath}`,
     `--platform ${options.platform}`,
     `--report-format ${options.reportFormat}`,
-    options.safe ? '--safe' : '--no-safe',
-    options.fixRisky ? '--fix-risky' : '',
     options.includeDevDependencies ? '--include-dev-dependencies' : '',
   ].filter(Boolean);
   return args.join(' ');
@@ -549,8 +573,6 @@ export const automate = async (
     options: {
       platform: options.platform,
       reportFormat: options.reportFormat,
-      safe: options.safe,
-      fixRisky: options.fixRisky,
       includeDevDependencies: options.includeDevDependencies,
     },
     summary: getAutomationSummary(results),

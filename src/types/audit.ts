@@ -7,16 +7,12 @@ export type ReportFormat = 'pdf' | 'json' | 'both';
 export interface AuditOptions {
   projectPath: string;
   platform: PlatformScope;
-  safe: boolean;
-  fixRisky: boolean;
   reportFormat: ReportFormat;
   includeDevDependencies: boolean;
 }
 
 export interface AuditCliOptions {
   platform?: PlatformScope;
-  safe?: boolean;
-  fixRisky?: boolean;
   reportFormat?: ReportFormat;
   includeDevDependencies?: boolean;
 }
@@ -24,8 +20,6 @@ export interface AuditCliOptions {
 export interface OwaspBpConfig {
   hostname: string;
   platforms?: PlatformScope;
-  safeMode?: boolean;
-  allowRiskyFixes?: boolean;
   reportFormat?: ReportFormat;
   includeDevDependencies?: boolean;
   iosInfoPlistPath?: string;
@@ -58,7 +52,6 @@ export type AutomationStatus =
   | 'FAILED';
 
 export type AutomationSkipReasonCode =
-  | 'SAFE_MODE_BLOCKED'
   | 'MISSING_CONFIG'
   | 'FILE_NOT_FOUND'
   | 'PATTERN_NOT_FOUND'
@@ -106,8 +99,6 @@ export interface AutomationRunReport {
   options: {
     platform: PlatformScope;
     reportFormat: ReportFormat;
-    safe: boolean;
-    fixRisky: boolean;
     includeDevDependencies: boolean;
   };
   summary: AutomationReportSummary;

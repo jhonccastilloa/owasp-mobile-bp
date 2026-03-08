@@ -5,41 +5,8 @@ import {
   resolveProductionInfoPlist,
 } from '../utils/iosFiles';
 import { getPackageDependencyNames } from '@/utils/packageJson';
+import { IOS_LEGACY_PERMISSION_RULES, IOS_PERMISSION_RULES } from '@/rules';
 import path from 'path';
-
-const IOS_PERMISSION_DEPENDENCY_MAP: Array<{
-  key: string;
-  dependencies: string[];
-  message: string;
-  owaspCategory: PermissionData['owaspCategory'];
-}> = [
-  {
-    key: 'NSCameraUsageDescription',
-    dependencies: [
-      'react-native-image-picker',
-      'react-native-vision-camera',
-      'react-native-image-crop-picker',
-    ],
-    message: 'Debe existir descripción de uso de cámara en iOS.',
-    owaspCategory: 'M1',
-  },
-  {
-    key: 'NSLocationWhenInUseUsageDescription',
-    dependencies: [
-      'react-native-maps',
-      'react-native-get-location',
-      'react-native-geocoding',
-    ],
-    message: 'Debe existir descripción de uso de ubicación en iOS.',
-    owaspCategory: 'M1',
-  },
-  {
-    key: 'NSPhotoLibraryUsageDescription',
-    dependencies: ['react-native-image-picker', 'react-native-image-crop-picker'],
-    message: 'Debe existir descripción de uso de galería en iOS.',
-    owaspCategory: 'M1',
-  },
-];
 
 const hasInfoPlistKey = (content: string, key: string) =>
   new RegExp(`<key>${key}</key>`).test(content);
@@ -64,17 +31,51 @@ const iosPermissionsAnalyze = async (currentPath: string): Promise<PermissionDat
   }
   const dependencySet = new Set(dependencyNames);
   const findings: PermissionData[] = [];
-  for (const permissionRule of IOS_PERMISSION_DEPENDENCY_MAP) {
-    const required = permissionRule.dependencies.some(dep => dependencySet.has(dep));
-    if (!required) continue;
-    const exists = hasInfoPlistKey(infoPlist.content, permissionRule.key);
+  for (const [permissionKey, permissionRule] of Object.entries(IOS_PERMISSION_RULES)) {
+    const required = permissionRule.requiredDependencies.some(dep =>
+      dependencySet.has(dep)
+    );
+    const exists = hasInfoPlistKey(infoPlist.content, permissionKey);
+    if (!required && !exists) continue;
+
+    let status = PermissionStatus.OK;
+    let message = permissionRule.message;
+    if (required && !exists) {
+      status = PermissionStatus.ERROR;
+    } else if (!required && exists) {
+      status = PermissionStatus.ERROR;
+      message =
+        `${permissionRule.message} Key declarada sin dependencias asociadas en package.json.`;
+    }
+
     findings.push({
       numLine: null,
-      status: exists ? PermissionStatus.OK : PermissionStatus.ERROR,
-      permission: permissionRule.key,
+      status,
+      permission: permissionKey,
       severity: 'E',
-      message: permissionRule.message,
+      message,
       owaspCategory: permissionRule.owaspCategory,
+      nameFile: path.basename(infoPlist.filePath),
+    });
+  }
+
+  for (const [legacyPermissionKey, legacyRule] of Object.entries(
+    IOS_LEGACY_PERMISSION_RULES
+  )) {
+    const required = legacyRule.requiredDependencies.some(dep =>
+      dependencySet.has(dep)
+    );
+    if (!required) continue;
+    const exists = hasInfoPlistKey(infoPlist.content, legacyPermissionKey);
+    if (!exists) continue;
+
+    findings.push({
+      numLine: null,
+      status: PermissionStatus.ERROR,
+      permission: legacyPermissionKey,
+      severity: legacyRule.severity,
+      message: legacyRule.message,
+      owaspCategory: legacyRule.owaspCategory,
       nameFile: path.basename(infoPlist.filePath),
     });
   }

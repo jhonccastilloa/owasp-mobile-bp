@@ -1,9 +1,10 @@
 import chalk from 'chalk';
+import { CLI_VERSION } from '@/constants/cli';
 
 export const printHelp = () => {
   console.log(`
 ${chalk.bold.cyan('OWASP Mobile BP')} - Security Verification Tool
-${chalk.gray('Version')} ${chalk.white('1.0.6')}
+${chalk.gray('Version')} ${chalk.white(CLI_VERSION)}
 
 ${chalk.bold('Usage:')}
   ${chalk.green('owasp-bp')} ${chalk.yellow('<command>')} [options]
@@ -35,7 +36,7 @@ ${chalk.bold('For more information:')}
 };
 
 export const printVersion = () => {
-  console.log('1.0.6');
+  console.log(CLI_VERSION);
 };
 
 export const printUnknownCommand = (command: string) => {

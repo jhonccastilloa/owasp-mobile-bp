@@ -12,8 +12,17 @@ const searchJavaLogs = async (directory: string): Promise<Report[]> => {
 
     const filePromises = files.map(async file => {
       const filePath = path.join(directory, file);
+      let stats: fs.Stats;
+      try {
+        stats = await fs.promises.lstat(filePath);
+      } catch (err) {
+        logger.error(
+          `Failed to read file metadata ${filePath}: ${err instanceof Error ? err.message : String(err)}`
+        );
+        return;
+      }
 
-      if (fs.lstatSync(filePath).isDirectory()) {
+      if (stats.isDirectory()) {
         const nestedReport = await searchJavaLogs(filePath);
         report.push(...nestedReport);
       } else if (file.endsWith('.java')) {

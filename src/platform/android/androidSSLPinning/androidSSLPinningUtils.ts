@@ -1,11 +1,8 @@
 import getOwaspBpConfig from '@/utils/owasp-bp.config';
-import tls from 'tls';
 import { searchFile } from '@/utils/tool';
 import path from 'path';
 import fs from 'fs';
-import getCertificateFingerprint, {
-  Fingerprints,
-} from './getCertificateFingerprint';
+import { Fingerprints } from './getCertificateFingerprint';
 
 export const SSLPinnerFactoryNames = [
   'SSLPinnerFactory.java',
@@ -180,13 +177,3 @@ export const createSSLPinnerFactory = async (
   );
 };
 
-export const getServerFingerprint = async (hostname: string) => {
-  const options: tls.ConnectionOptions = {
-    host: hostname,
-    port: 443,
-    servername: hostname,
-    rejectUnauthorized: false,
-  };
-
-  return await getCertificateFingerprint(options);
-};

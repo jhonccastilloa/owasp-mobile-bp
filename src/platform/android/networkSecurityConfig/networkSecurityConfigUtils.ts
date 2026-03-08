@@ -1,5 +1,4 @@
-import path from 'path';
-import { cleanXmlComentaries, searchFile } from '@/utils/tool';
+import { cleanXmlComments } from '@/utils/tool';
 import {
   AndroidVariantContext,
   getNetworkSecurityConfigForVariant,
@@ -7,15 +6,6 @@ import {
 } from '@/platform/android/context/androidVariantContext';
 
 export const networkSecurityName = 'network_security_config.xml';
-
-export const getNetworkSecurityConfigPath = async (currentPath: string) => {
-  const result = await searchFile(
-    path.join(currentPath, 'android', 'app', 'src'),
-    networkSecurityName
-  );
-
-  return result;
-};
 
 export const networkRegex = (key: string) =>
   new RegExp(`${key}\\s*=\\s*"([^"]*)"`, 'g');
@@ -38,7 +28,7 @@ export const readNetworkSecurityConfig = async (
     };
   }
 
-  const { comments, newData } = cleanXmlComentaries(networkSecurityConfigData);
+  const { comments, newData } = cleanXmlComments(networkSecurityConfigData);
   return {
     networkSecurityConfigNoComment: newData,
     comments,

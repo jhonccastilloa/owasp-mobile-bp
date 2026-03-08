@@ -21,10 +21,13 @@ const cleanAndReplace = (data: string, regex: RegExp) => {
   return { newData, comments };
 };
 
-export const cleanXmlComentaries = (data: string) => {
+export const cleanXmlComments = (data: string) => {
   const regexComments = /<!--([\s\S]*?)-->/g;
   return cleanAndReplace(data, regexComments);
 };
+
+// Backward-compatible alias; use cleanXmlComments in new code.
+export const cleanXmlComentaries = cleanXmlComments;
 
 export const cleanBlockAndLineComment = (data: string) => {
   const regexComments = /(?<!https?:)\/\/.*?$|\/\*[\s\S]*?\*\//gm;
@@ -98,7 +101,9 @@ export const searchFile = async (
   }
 
   try {
-    if (!fs.existsSync(currentPath)) {
+    try {
+      await fs.promises.access(currentPath, fs.constants.F_OK);
+    } catch {
       return [null, null];
     }
 

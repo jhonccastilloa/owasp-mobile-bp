@@ -15,7 +15,12 @@ const javaLogsAnalyze = async (currentPath: string) => {
   );
   const regexRasp =
     /implementation\s*\(\s*name:\s*'ShieldSDK',\s*ext:\s*'aar'\s*\)/;
-  const buildGradleAppContent = fs.readFileSync(buildGradleAppPath, 'utf-8');
+  let buildGradleAppContent = '';
+  try {
+    buildGradleAppContent = await fs.promises.readFile(buildGradleAppPath, 'utf-8');
+  } catch {
+    buildGradleAppContent = '';
+  }
   const javaLogsFound = await searchJavaLogs(androidPath);
   let message = '';
   let status = false;

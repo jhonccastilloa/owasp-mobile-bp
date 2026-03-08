@@ -1,15 +1,6 @@
 import { Finding } from '@/types/audit';
 import { PermissionData } from '@/types/global';
-
-const stringifyMessage = (message: PermissionData['message']) => {
-  if (typeof message === 'string') return message;
-  return message
-    .map(item => {
-      if (typeof item === 'string') return item;
-      return item.text ?? '';
-    })
-    .join('');
-};
+import { stringifyPermissionMessage } from '@/utils/message';
 
 export const permissionDataToFindings = (
   data: PermissionData[],
@@ -30,9 +21,8 @@ export const permissionDataToFindings = (
       severity: item.severity,
       owaspCategory: item.owaspCategory,
       status: item.status,
-      message: stringifyMessage(item.message),
+      message: stringifyPermissionMessage(item.message),
       fixAvailable: fixedRules.has(item.permission),
       fixRisk: fixedRules.has(item.permission) ? 'low' : 'none',
     };
   });
-

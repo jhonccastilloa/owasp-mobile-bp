@@ -60,6 +60,8 @@ import { generateAutomationPDF } from '@/utils/pdf/automationPdfGenerator';
 import { getAutomationSummary } from '@/utils/report/automationSummary';
 import { getAndroidManifestPath } from '@/platform/android/androidManifestAttributesConfig/androidManifestAttributesConfigUtils';
 import { getMainActivityJava, getMainApplication } from '@/utils/androidFiles';
+import { stringifyPermissionMessage } from '@/utils/message';
+import { toErrorMessage } from '@/utils/error';
 
 type AnalyzeOutput = PermissionData | PermissionData[] | null;
 
@@ -91,15 +93,6 @@ const LEGACY_AUTO_REMOVABLE_PERMISSIONS = new Set(
   getAutoRemovableManifestPermissions()
 );
 
-const stringifyMessage = (message: PermissionData['message']): string => {
-  if (typeof message === 'string') return message;
-  return message
-    .map(item => (typeof item === 'string' ? item : (item.text ?? '').toString()))
-    .join('')
-    .replace(/\s+/g, ' ')
-    .trim();
-};
-
 const summarizeAnalyzeOutput = (output: AnalyzeOutput): AnalysisSnapshot => {
   if (!output) {
     return {
@@ -115,14 +108,17 @@ const summarizeAnalyzeOutput = (output: AnalyzeOutput): AnalysisSnapshot => {
 
     const compliant = output.every(item => item.status === 'OK');
     const summary = output
-      .map(item => `${item.permission}: ${item.status} (${stringifyMessage(item.message)})`)
+      .map(
+        item =>
+          `${item.permission}: ${item.status} (${stringifyPermissionMessage(item.message)})`
+      )
       .join(' | ');
     return { compliant, summary };
   }
 
   return {
     compliant: output.status === 'OK',
-    summary: `${output.permission}: ${output.status} (${stringifyMessage(output.message)})`,
+    summary: `${output.permission}: ${output.status} (${stringifyPermissionMessage(output.message)})`,
   };
 };
 
@@ -284,7 +280,7 @@ const executeTask = async (
       durationMs: Date.now() - startTime,
     };
   } catch (error) {
-    const reasonMessage = error instanceof Error ? error.message : String(error);
+    const reasonMessage = toErrorMessage(error);
     return {
       ruleId: task.ruleId,
       platform: task.platform,
@@ -422,8 +418,7 @@ const buildAndroidTasks = (
 ];
 
 const buildIosTasks = (
-  currentPath: string,
-  options: AuditOptions
+  currentPath: string
 ): AutomationTaskDefinition[] => [
   {
     ruleId: 'ios.ats',
@@ -478,7 +473,6 @@ const buildIosTasks = (
 
 const buildAnalyzeOnlyResults = async (
   currentPath: string,
-  context: AndroidVariantContext,
   options: AuditOptions
 ): Promise<AutomationRuleResult[]> => {
   const results: AutomationRuleResult[] = [];
@@ -542,7 +536,7 @@ export const automate = async (
     tasks.push(...buildAndroidTasks(currentPath, context, options));
   }
   if (options.platform === 'ios' || options.platform === 'all') {
-    tasks.push(...buildIosTasks(currentPath, options));
+    tasks.push(...buildIosTasks(currentPath));
   }
 
   const results: AutomationRuleResult[] = [];
@@ -559,7 +553,7 @@ export const automate = async (
     }
   }
 
-  results.push(...(await buildAnalyzeOnlyResults(currentPath, context, options)));
+  results.push(...(await buildAnalyzeOnlyResults(currentPath, options)));
 
   const appProject = getJsonAppProject(currentPath);
   const currentBranch = await getCurrentGitBranch(currentPath);

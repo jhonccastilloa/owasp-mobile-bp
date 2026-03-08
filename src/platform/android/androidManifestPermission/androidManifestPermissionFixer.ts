@@ -3,17 +3,7 @@ import { getAndroidManifestPath } from '@/platform/android/androidManifestAttrib
 import { ANDROID_PERMISSION_RULES } from '@/rules';
 import { getPackageDependencyNames } from '@/utils/packageJson';
 import { logger } from '@/utils/logger';
-
-const toAndroidPermissionName = (permission: string) =>
-  `android.permission.${permission}`;
-
-const createPermissionRegex = (permission: string) =>
-  new RegExp(
-    `<uses-permission\\b[^>]*android:name\\s*=\\s*"${toAndroidPermissionName(
-      permission
-    ).replace(/\./g, '\\.')}"[^>]*\\/?>\\s*\\n?`,
-    'g'
-  );
+import { createAndroidPermissionRegex } from './utils';
 
 const fixAndroidManifestPermissions = async (currentPath: string) => {
   const manifestPath = getAndroidManifestPath(currentPath, 'main');
@@ -27,7 +17,10 @@ const fixAndroidManifestPermissions = async (currentPath: string) => {
     const required = rule.requiredDependencies.some(dep => dependencySet.has(dep));
     if (required) continue;
 
-    updatedManifest = updatedManifest.replace(createPermissionRegex(permission), '');
+    updatedManifest = updatedManifest.replace(
+      createAndroidPermissionRegex(permission),
+      ''
+    );
   }
 
   if (updatedManifest === originalManifest) return;

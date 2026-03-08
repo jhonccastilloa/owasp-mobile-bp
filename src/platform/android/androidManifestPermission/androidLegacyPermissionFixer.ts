@@ -3,6 +3,10 @@ import { getAndroidManifestPath } from '@/platform/android/androidManifestAttrib
 import { ANDROID_PERMISSION_RULES } from '@/rules';
 import { getPackageDependencyNames } from '@/utils/packageJson';
 import { logger } from '@/utils/logger';
+import {
+  createAndroidPermissionRegex,
+  toAndroidPermissionName,
+} from './utils';
 
 const STORAGE_LEGACY_PERMISSIONS = new Set([
   'READ_EXTERNAL_STORAGE',
@@ -11,17 +15,6 @@ const STORAGE_LEGACY_PERMISSIONS = new Set([
 
 const USE_FINGERPRINT = 'USE_FINGERPRINT';
 const USE_BIOMETRIC = 'USE_BIOMETRIC';
-
-const toAndroidPermissionName = (permission: string) =>
-  `android.permission.${permission}`;
-
-const createPermissionRegex = (permission: string) =>
-  new RegExp(
-    `<uses-permission\\b[^>]*android:name\\s*=\\s*"${toAndroidPermissionName(
-      permission
-    ).replace(/\./g, '\\.')}"[^>]*\\/?>\\s*\\n?`,
-    'g'
-  );
 
 const ensurePermission = (manifestContent: string, permission: string) => {
   const fullPermission = toAndroidPermissionName(permission);
@@ -66,11 +59,19 @@ export const fixAndroidLegacyPermissions = async (currentPath: string) => {
   let updatedManifest = originalManifest;
 
   for (const permission of getAutoRemovablePermissions()) {
-    updatedManifest = updatedManifest.replace(createPermissionRegex(permission), '');
+    updatedManifest = updatedManifest.replace(
+      createAndroidPermissionRegex(permission),
+      ''
+    );
   }
 
-  const hadUseFingerprint = createPermissionRegex(USE_FINGERPRINT).test(updatedManifest);
-  updatedManifest = updatedManifest.replace(createPermissionRegex(USE_FINGERPRINT), '');
+  const hadUseFingerprint = createAndroidPermissionRegex(USE_FINGERPRINT).test(
+    updatedManifest
+  );
+  updatedManifest = updatedManifest.replace(
+    createAndroidPermissionRegex(USE_FINGERPRINT),
+    ''
+  );
 
   if (hadUseFingerprint) {
     const dependencySet = new Set(await getPackageDependencyNames(currentPath));

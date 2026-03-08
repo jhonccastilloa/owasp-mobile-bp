@@ -27,22 +27,31 @@ export const getMainApplication = async (
 ): Promise<{
   mainApplicationFile: string | null;
   mainApplicationPath: string | null;
+  mainApplicationName: string | null;
+  // Backward-compatible alias; prefer mainApplicationName.
   mainAplicationName: string | null;
 }> => {
-  const mainAplicationNames = ['MainApplication.java', 'MainApplication.kt'];
+  const mainApplicationNames = ['MainApplication.java', 'MainApplication.kt'];
   const javaComPath = getJavaComPath(currentPath);
-  for (let mainAplicationName of mainAplicationNames) {
+  for (const mainApplicationName of mainApplicationNames) {
     const [mainApplicationFile, mainApplicationPath] = await searchFile(
       javaComPath,
-      mainAplicationName
+      mainApplicationName
     );
-    if (mainApplicationFile)
-      return { mainApplicationFile, mainApplicationPath, mainAplicationName };
+    if (mainApplicationFile) {
+      return {
+        mainApplicationFile,
+        mainApplicationPath,
+        mainApplicationName,
+        mainAplicationName: mainApplicationName,
+      };
+    }
   }
 
   return {
     mainApplicationFile: null,
     mainApplicationPath: null,
+    mainApplicationName: null,
     mainAplicationName: null,
   };
 };

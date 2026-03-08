@@ -1,10 +1,7 @@
-import { Command } from 'commander';
+import { Command, Option } from 'commander';
 import { logger } from '@/utils/logger';
 import { PlatformScope } from '@/types/audit';
-
-const DOCUMENTATION_URL =
-  'https://github.com/jhonccastilloa/owasp-mobile-bp/blob/main/DOCUMENTATION.md';
-const CliVersion = '1.0.6';
+import { CLI_VERSION, DOCUMENTATION_URL } from '@/constants/cli';
 
 const setVerboseMode = (command: Command) => {
   const globalOptions = command.parent?.opts();
@@ -17,17 +14,29 @@ export const createProgram = (): Command => {
   program
     .name('owasp-bp')
     .description('OWASP Mobile Security Verification CLI Tool')
-    .version(CliVersion)
+    .version(CLI_VERSION)
     .option('-v, --verbose', 'Enable verbose output', false)
     .showHelpAfterError('(run with --help for usage)')
     .exitOverride();
 
-  program
-    .command('verify')
+  const withAuditOptions = (command: Command) =>
+    command
+      .option('-p, --path <path>', 'Project path', process.cwd())
+      .addOption(
+        new Option('--platform <platform>', 'Platform: android|ios|all')
+          .choices(['android', 'ios', 'all'])
+          .default('all')
+      )
+      .option(
+        '--include-dev-dependencies',
+        'Analyze devDependencies for vulnerable libraries',
+        false
+      );
+
+  withAuditOptions(
+    program
+      .command('verify')
     .description('Analyze project for security issues')
-    .option('-p, --path <path>', 'Project path', process.cwd())
-    .option('--platform <platform>', 'Platform: android|ios|all', 'all')
-    .option('--include-dev-dependencies', 'Analyze devDependencies for vulnerable libraries', false)
     .action(async (options, command) => {
       setVerboseMode(command);
       const { verify } = await import('@/commands/verify');
@@ -35,14 +44,13 @@ export const createProgram = (): Command => {
         platform: options.platform as PlatformScope,
         includeDevDependencies: options.includeDevDependencies,
       });
-    });
+    })
+  );
 
-  program
-    .command('automate')
+  withAuditOptions(
+    program
+      .command('automate')
     .description('Automatically fix detected issues')
-    .option('-p, --path <path>', 'Project path', process.cwd())
-    .option('--platform <platform>', 'Platform: android|ios|all', 'all')
-    .option('--include-dev-dependencies', 'Analyze devDependencies for vulnerable libraries', false)
     .action(async (options, command) => {
       setVerboseMode(command);
       const { automate } = await import('@/commands/automate');
@@ -50,7 +58,8 @@ export const createProgram = (): Command => {
         platform: options.platform as PlatformScope,
         includeDevDependencies: options.includeDevDependencies,
       });
-    });
+    })
+  );
 
   program
     .command('documentation')

@@ -8,12 +8,10 @@ import iosPermissionsAnalyze from './iosPermissionsAnalyzer';
 import { PermissionStatus } from '@/types/enums';
 import { IOS_LEGACY_PERMISSION_RULES, IOS_PERMISSION_RULES } from '@/rules';
 import { getPackageDependencyNames } from '@/utils/packageJson';
+import { hasInfoPlistKey } from './iosPermissionUtils';
 
 const buildPermissionEntry = (key: string) =>
   `\n\t<key>${key}</key>\n\t<string>Required by application functionality.</string>`;
-
-const hasInfoPlistKey = (content: string, key: string) =>
-  new RegExp(`<key>${key}</key>`).test(content);
 
 const removePermissionEntry = (content: string, key: string) =>
   content.replace(

@@ -10,8 +10,9 @@ const deleteLogsJava = async (directory: string) => {
 
     const filePromises = files.map(async file => {
       const filePath = path.join(directory, file);
+      const stats = await fs.promises.lstat(filePath);
 
-      if (fs.lstatSync(filePath).isDirectory()) {
+      if (stats.isDirectory()) {
         await deleteLogsJava(filePath);
       } else if (file.endsWith('.java')) {
         const data = await fs.promises.readFile(filePath, 'utf8');

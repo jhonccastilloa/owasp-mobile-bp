@@ -7,9 +7,7 @@ import {
 import { getPackageDependencyNames } from '@/utils/packageJson';
 import { IOS_LEGACY_PERMISSION_RULES, IOS_PERMISSION_RULES } from '@/rules';
 import path from 'path';
-
-const hasInfoPlistKey = (content: string, key: string) =>
-  new RegExp(`<key>${key}</key>`).test(content);
+import { hasInfoPlistKey } from './iosPermissionUtils';
 
 const iosPermissionsAnalyze = async (currentPath: string): Promise<PermissionData[]> => {
   const [infoPlist, dependencyNames] = await Promise.all([

@@ -1,4 +1,4 @@
-import { cleanXmlComentaries } from '@/utils/tool';
+import { cleanXmlComments } from '@/utils/tool';
 import fs from 'fs';
 import path from 'path';
 
@@ -19,7 +19,7 @@ export const getAndroidManifestFile = async (
     androidManifestFilePath,
     'utf-8'
   );
-  const { comments, newData } = cleanXmlComentaries(androidManifest);
+  const { comments, newData } = cleanXmlComments(androidManifest);
   return { androidManifestWithoutComments: newData, comments };
 };
 

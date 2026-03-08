@@ -1,13 +1,7 @@
 import { CommanderError } from 'commander';
 import { createProgram } from './cli/program.js';
 import { logger } from './utils/logger.js';
-
-const toErrorMessage = (error: unknown): string => {
-  if (error instanceof Error) {
-    return error.message;
-  }
-  return String(error);
-};
+import { toErrorMessage } from './utils/error.js';
 
 export const run = async (argv: string[] = process.argv): Promise<void> => {
   const program = createProgram();

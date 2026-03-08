@@ -15,13 +15,13 @@ const androidSSLPinningFix = async (currentPath: string) => {
   const { SSLPinningFile, fileName } = await getSSLPinningFile(currentPath);
   const { status } = await verifySSLPinning(SSLPinningFile, fileName);
   if (status === PermissionStatus.OK) return;
-  const { mainApplicationFile, mainApplicationPath, mainAplicationName } =
+  const { mainApplicationFile, mainApplicationPath, mainApplicationName } =
     await getMainApplication(currentPath);
 
-  if (!mainApplicationPath || !mainApplicationFile || !mainAplicationName)
+  if (!mainApplicationPath || !mainApplicationFile || !mainApplicationName)
     return;
   const mainApplicationFolder = mainApplicationPath.replace(
-    mainAplicationName,
+    mainApplicationName,
     ''
   );
   const androidApplicationId = await getAndroidApplicationId(currentPath);
@@ -40,7 +40,7 @@ const androidSSLPinningFix = async (currentPath: string) => {
     mainApplicationFolder,
     fingerprints,
     androidApplicationId,
-    mainAplicationName.endsWith('.kt'),
+    mainApplicationName.endsWith('.kt'),
     currentPath
   );
   updateMainApplication(mainApplicationPath, mainApplicationFile);
